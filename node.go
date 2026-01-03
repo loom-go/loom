@@ -15,7 +15,6 @@ func (n NodeFunc) Render(ctx *RenderContext) error {
 	return n(ctx)
 }
 
-// todo: rename to RenderContext
 type RenderContext struct {
 	mu  sync.RWMutex
 	ctx context.Context

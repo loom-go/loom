@@ -16,7 +16,7 @@ type ForMapper[T any] interface {
 // type forRendered[T any] struct {
 // 	item  T
 // 	node  Node
-// 	owner interface{ Dispose() } // todo: export sig.owner
+// 	owner signals.Owner
 // }
 
 type ForNode[T any] struct {
@@ -32,7 +32,7 @@ type ForNode[T any] struct {
 	// currently rendered items
 	mapped []loom.Node
 	// owners of the rendered items
-	owners []interface{ Dispose() } // todo: export sig.owner
+	owners []*signals.Owner
 	// signals for each item and index
 	items   []*sig.Signal[T]
 	indexes []*sig.Signal[int]
@@ -51,7 +51,7 @@ func For[T any, M ForMapper[T]](items signals.Accessor[[]T], mapper M) loom.Node
 
 func (n *ForNode[T]) Render(ctx *loom.RenderContext) (err error) {
 	initial := true
-	sig.NewEffect(func() {
+	signals.Effect(func() {
 		defer func() {
 			if err != nil && !initial {
 				panic(err)
@@ -82,7 +82,7 @@ func (n *ForNode[T]) Render(ctx *loom.RenderContext) (err error) {
 
 func (n *ForNode[T]) init(items []T) {
 	n.mapped = make([]loom.Node, len(items))
-	n.owners = make([]interface{ Dispose() }, len(items))
+	n.owners = make([]*signals.Owner, len(items))
 	n.items = make([]*sig.Signal[T], len(items))
 	n.indexes = make([]*sig.Signal[int], len(items))
 	n.clearKeys()
@@ -93,7 +93,7 @@ func (n *ForNode[T]) init(items []T) {
 
 		var key any
 		var node loom.Node
-		owner := sig.NewOwner()
+		owner := signals.NewOwner()
 		owner.Run(func() error {
 			key, node = n.mapper(itemSignal.Read, indexSignal.Read)
 			return nil

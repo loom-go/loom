@@ -29,3 +29,9 @@ func OnCleanup(fn func()) {
 func Untrack[T any](fn func() T) T {
 	return sig.Untrack(fn)
 }
+
+type Owner = sig.Owner
+
+func NewOwner() *Owner {
+	return sig.NewOwner()
+}
