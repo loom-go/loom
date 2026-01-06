@@ -8,23 +8,45 @@ import (
 // Bind creates a reactive Node that re-renders whenever any signal
 // accessed within the provided function changes.
 func Bind(fn func() loom.Node) loom.Node {
-	return loom.NodeFunc(func(ctx *loom.RenderContext) (err error) {
-		// create an owner outside of the effect
-		// so the node is not disposed on re-renders
-		o := signals.NewOwner()
+	return &bindNode{
+		fn:          fn,
+		renderOwner: signals.NewOwner(),
+	}
+}
 
-		initial := true
-		signals.Effect(func() {
-			node := fn()
+type bindNode struct {
+	fn          func() loom.Node
+	renderOwner *signals.Owner // owns the rendered children
+}
 
-			err = o.Run(func() error { return node.Render(ctx) })
-			if err != nil && !initial {
-				panic(err)
-			}
+func (n *bindNode) ID() string {
+	return "loom.Bind"
+}
 
-			initial = false
+func (n *bindNode) Mount(slot *loom.Slot) (err error) {
+	initial := true
+
+	signals.Effect(func() {
+		node := n.fn()
+
+		err := n.renderOwner.Run(func() error {
+			return slot.RenderChildren(node)
 		})
 
-		return err
+		if err != nil && !initial {
+			panic(err)
+		}
+		initial = false
 	})
+
+	return err
+}
+
+func (n *bindNode) Update(slot *loom.Slot) error {
+	return nil
+}
+
+func (n *bindNode) Unmount(slot *loom.Slot) error {
+	n.renderOwner.Dispose()
+	return nil
 }

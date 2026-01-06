@@ -1,6 +1,7 @@
 package components
 
 import (
+	"errors"
 	"reflect"
 
 	"github.com/AnatoleLucet/loom"
@@ -8,26 +9,39 @@ import (
 	"github.com/AnatoleLucet/sig"
 )
 
-// ForMapper represents a function that maps each item of a For() to a Node, optionally returning a key.
-type ForMapper[T any] interface {
-	func(signals.Accessor[T], signals.Accessor[int]) loom.Node | func(signals.Accessor[T], signals.Accessor[int]) (any, loom.Node)
+// ForKeyer represents either a key function or a mapper function for For().
+type ForKeyer[T any] interface {
+	func(T) any | func(signals.Accessor[T], signals.Accessor[int]) loom.Node
 }
 
-// type forRendered[T any] struct {
-// 	item  T
-// 	node  Node
-// 	owner signals.Owner
-// }
+func For[
+	T any,
+	Keyer ForKeyer[T],
+](
+	items signals.Accessor[[]T],
+	keyer Keyer,
+	mapper ...func(signals.Accessor[T], signals.Accessor[int]) loom.Node,
+) loom.Node {
+	keyerFn, mapperFn, err := parseForKeyer(keyer, mapper...)
+	if err != nil {
+		panic(err)
+	}
 
-type ForNode[T any] struct {
-	input  signals.Accessor[[]T]
-	mapper func(signals.Accessor[T], signals.Accessor[int]) (any, loom.Node)
+	return &forNode[T]{
+		input: items,
 
-	// whether the user provide a key for each items
-	keyed bool
+		mapper: mapperFn,
+		keyer:  keyerFn,
 
-	// map of keys to track existing items
-	keys map[any]any
+		renderOwner: signals.NewOwner(),
+	}
+}
+
+type forNode[T any] struct {
+	input signals.Accessor[[]T]
+
+	keyer  func(T) any
+	mapper func(signals.Accessor[T], signals.Accessor[int]) loom.Node
 
 	// currently rendered items
 	mapped []loom.Node
@@ -36,138 +50,208 @@ type ForNode[T any] struct {
 	// signals for each item and index
 	items   []*sig.Signal[T]
 	indexes []*sig.Signal[int]
+
+	// owns the rendered children
+	renderOwner *signals.Owner
 }
 
-func For[T any, M ForMapper[T]](items signals.Accessor[[]T], mapper M) loom.Node {
-	keyed, mappern := normalizeForMapper[T](mapper)
-
-	return &ForNode[T]{
-		input:  items,
-		mapper: mappern,
-
-		keyed: keyed,
-	}
+func (n *forNode[T]) ID() string {
+	return "loom.For"
 }
 
-func (n *ForNode[T]) Render(ctx *loom.RenderContext) (err error) {
+func (n *forNode[T]) Mount(slot *loom.Slot) (err error) {
 	initial := true
-	signals.Effect(func() {
-		defer func() {
-			if err != nil && !initial {
-				panic(err)
-			}
-			initial = false
-		}()
 
+	signals.Effect(func() {
 		newItems := n.input()
 
-		// fast path for empty list
-		if len(newItems) == 0 {
-			n.dispose()
-			n.render(ctx)
-			return
-		}
+		err = n.renderOwner.Run(func() error {
+			// fast path for empty list
+			if len(newItems) == 0 {
+				n.disposeItems()
+				return slot.UnmountChildren()
+			}
 
-		// fast path for create
-		if len(n.mapped) == 0 {
-			n.init(newItems)
-			n.render(ctx)
-			return
-		}
+			// fast path for create
+			if len(n.mapped) == 0 {
+				n.initItems(newItems)
+				return slot.RenderChildren(n.mapped...)
+			}
 
+			// update existing items
+			oldLen := len(n.mapped)
+			n.updateItems(newItems)
+			newLen := len(n.mapped)
+
+			if newLen > oldLen {
+				err = slot.AppendChildren(n.mapped[oldLen:]...)
+			} else if newLen < oldLen {
+				for i := oldLen - 1; i >= newLen; i-- {
+					err = slot.UnmountChild(i)
+				}
+			}
+
+			return err
+		})
+
+		if err != nil && !initial {
+			panic(err)
+		}
+		initial = false
 	})
 
 	return err
 }
 
-func (n *ForNode[T]) init(items []T) {
+func (n *forNode[T]) Update(slot *loom.Slot) error {
+	return nil
+}
+
+func (n *forNode[T]) Unmount(slot *loom.Slot) error {
+	n.disposeItems()
+	return nil
+}
+
+func (n *forNode[T]) initItems(items []T) {
 	n.mapped = make([]loom.Node, len(items))
 	n.owners = make([]*signals.Owner, len(items))
 	n.items = make([]*sig.Signal[T], len(items))
 	n.indexes = make([]*sig.Signal[int], len(items))
-	n.clearKeys()
 
 	for i, item := range items {
-		itemSignal := sig.NewSignal(item)
-		indexSignal := sig.NewSignal(i)
-
-		var key any
-		var node loom.Node
-		owner := signals.NewOwner()
-		owner.Run(func() error {
-			key, node = n.mapper(itemSignal.Read, indexSignal.Read)
-			return nil
-		})
-
-		n.mapped[i] = node
-		n.owners[i] = owner
-		n.items[i] = itemSignal
-		n.indexes[i] = indexSignal
-
-		if n.keyed {
-			n.addKey(&items[i], key)
-		}
+		n.initItem(i, &item)
 	}
 }
 
-// func (n *ForNode[T]) render(ctx *Context, oldItems, newItems []T) error {
-func (n *ForNode[T]) render(ctx *loom.RenderContext) error {
-	for _, node := range n.mapped {
-		// if n.compare(&oldItems[i], &newItems[i]) {
-		// 	continue
-		// }
+func (n *forNode[T]) initItem(index int, item *T) {
+	itemSignal := sig.NewSignal(*item)
+	indexSignal := sig.NewSignal(index)
 
-		err := node.Render(ctx)
-		if err != nil {
-			return err
-		}
-	}
+	var node loom.Node
+	owner := signals.NewOwner()
+	owner.Run(func() error {
+		node = n.mapper(itemSignal.Read, indexSignal.Read)
+		return nil
+	})
 
-	return nil
+	n.mapped[index] = node
+	n.owners[index] = owner
+	n.items[index] = itemSignal
+	n.indexes[index] = indexSignal
 }
 
-func (n *ForNode[T]) dispose() {
-	for _, owner := range n.owners {
-		owner.Dispose()
+func (n *forNode[T]) updateItems(newItems []T) {
+	start := 0
+	end := min(len(n.mapped), len(newItems))
+
+	// skip common prefix
+	for start < end {
+		newItem := newItems[start]
+		currItem := signals.Untrack(n.items[start].Read)
+
+		if !n.compareItems(newItem, currItem) {
+			break
+		}
+		start++
 	}
+
+	// skip common suffix
+	for end > start {
+		newItem := newItems[end-1]
+		currItem := signals.Untrack(n.items[end-1].Read)
+
+		if !n.compareItems(newItem, currItem) {
+			break
+		}
+		end--
+	}
+
+	signals.Batch(func() {
+		// update existing items
+		for i := start; i < end; i++ {
+			newItem := newItems[i]
+			n.items[i].Write(newItem)
+			n.indexes[i].Write(i)
+		}
+
+		// dispose removed items
+		for i := end; i < len(n.mapped); i++ {
+			n.owners[i].Dispose()
+		}
+
+		// resize slices
+		oldLen := len(n.mapped)
+		n.resizeItems(len(newItems))
+
+		// create new items
+		for i := oldLen; i < len(newItems); i++ {
+			n.initItem(i, &newItems[i])
+		}
+	})
+}
+
+func (n *forNode[T]) resizeItems(newLen int) {
+	oldLen := len(n.mapped)
+	if newLen > oldLen {
+		n.mapped = append(n.mapped, make([]loom.Node, newLen-oldLen)...)
+		n.owners = append(n.owners, make([]*signals.Owner, newLen-oldLen)...)
+		n.items = append(n.items, make([]*sig.Signal[T], newLen-oldLen)...)
+		n.indexes = append(n.indexes, make([]*sig.Signal[int], newLen-oldLen)...)
+	} else {
+		n.mapped = n.mapped[:newLen]
+		n.owners = n.owners[:newLen]
+		n.items = n.items[:newLen]
+		n.indexes = n.indexes[:newLen]
+	}
+}
+
+func (n *forNode[T]) disposeItems() {
+	n.renderOwner.Dispose()
 
 	n.mapped = nil
 	n.owners = nil
 	n.items = nil
 	n.indexes = nil
-	n.clearKeys()
 }
 
-func (n *ForNode[T]) compare(a, b *T) bool {
-	if !n.keyed {
+func (n *forNode[T]) compareItems(a, b T) bool {
+	if n.keyer == nil {
 		return reflect.DeepEqual(a, b)
 	}
 
-	// todo: should render child to get the key, if !hasKey(a|b)
-
-	if !n.hasKey(a) || !n.hasKey(b) {
-		return false
-	}
-
-	return reflect.DeepEqual(n.getKey(a), n.getKey(b))
+	return reflect.DeepEqual((n.keyer)(a), (n.keyer)(b))
 }
 
-func (n *ForNode[T]) getKey(item *T) any      { return n.keys[item] }
-func (n *ForNode[T]) addKey(item *T, key any) { n.keys[item] = key }
-func (n *ForNode[T]) removeKey(item *T)       { delete(n.keys, item) }
-func (n *ForNode[T]) hasKey(item *T) bool     { _, exists := n.keys[item]; return exists }
-func (n *ForNode[T]) clearKeys()              { n.keys = make(map[any]any) }
-
-// ugly function to map the ForChild union into a regular func type that always returns (any, Node)
-func normalizeForMapper[T any, C ForMapper[T]](child C) (bool, func(signals.Accessor[T], signals.Accessor[int]) (any, loom.Node)) {
-	switch render := any(child).(type) {
-	case func(signals.Accessor[T], signals.Accessor[int]) loom.Node:
-		return false, func(item signals.Accessor[T], index signals.Accessor[int]) (any, loom.Node) {
-			return nil, render(item, index)
+func parseForKeyer[
+	T any,
+	Keyer ForKeyer[T],
+](
+	keyer Keyer,
+	mapper ...func(signals.Accessor[T], signals.Accessor[int]) loom.Node,
+) (
+	func(T) any,
+	func(signals.Accessor[T], signals.Accessor[int]) loom.Node,
+	error,
+) {
+	mapperFn, ok := any(keyer).(func(signals.Accessor[T], signals.Accessor[int]) loom.Node)
+	if ok {
+		if len(mapper) > 0 {
+			return nil, nil, errors.New("For: expected at most one mapper function")
 		}
-	case func(signals.Accessor[T], signals.Accessor[int]) (any, loom.Node):
-		return true, render
-	default:
-		panic("For: child must be of type func(Accessor[T], Accessor[int]) Node or func(Accessor[T], Accessor[int]) (any, Node)")
+
+		return nil, mapperFn, nil
 	}
+
+	keyerFn, keyed := any(keyer).(func(T) any)
+	if !keyed {
+		return nil, nil, errors.New("For: expected keyer to be either a key function or a mapper function")
+	}
+	if len(mapper) == 0 {
+		return nil, nil, errors.New("For: expected mapper function")
+	}
+	if len(mapper) > 1 {
+		return nil, nil, errors.New("For: expected at most one mapper function")
+	}
+
+	return keyerFn, mapper[0], nil
 }

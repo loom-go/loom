@@ -6,19 +6,24 @@ import (
 )
 
 // Show conditionally renders the given node if the when function returns true.
-func Show(when func() bool, node loom.Node) loom.Node {
+func Show(when func() bool, fn func() loom.Node) loom.Node {
 	o := signals.NewOwner()
 
+	var node loom.Node
 	return Bind(func() loom.Node {
-		if when() {
-			return loom.NodeFunc(func(ctx *loom.RenderContext) error {
-				return o.Run(func() error {
-					return node.Render(ctx)
-				})
+		if !when() {
+			o.Dispose()
+			node = nil
+			return nil
+		}
+
+		if node == nil {
+			o.Run(func() error {
+				node = fn()
+				return nil
 			})
 		}
 
-		o.Dispose()
-		return Fragment()
+		return Own(o, node)
 	})
 }
