@@ -6,6 +6,8 @@ import (
 )
 
 // Own wraps a node so that it is managed by the given signals.Owner.
+// Note that disposing the owner will NOT unmount the node;
+// Own is only responsible assigning ownership of signals used within the node.
 func Own(owner *signals.Owner, node loom.Node) loom.Node {
 	return &ownNode{owner, node}
 }

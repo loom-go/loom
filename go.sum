@@ -6,3 +6,5 @@ github.com/AnatoleLucet/sig v0.0.0-20260106221103-bd0ef55fecd4 h1:vuTIMpDxECcK4o
 github.com/AnatoleLucet/sig v0.0.0-20260106221103-bd0ef55fecd4/go.mod h1:HmxHMh1Ty2vfh5s6mUhs8yRI8LrAv/0K5uzuOoH4QdY=
 github.com/petermattis/goid v0.0.0-20251121121749-a11dd1a45f9a h1:VweslR2akb/ARhXfqSfRbj1vpWwYXf3eeAUyw/ndms0=
 github.com/petermattis/goid v0.0.0-20251121121749-a11dd1a45f9a/go.mod h1:pxMtw7cyUw6B2bRH0ZBANSPg+AoSud1I1iyJHI69jH4=
+github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
+github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
