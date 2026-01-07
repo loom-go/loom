@@ -1,6 +1,6 @@
 <h1 align="center"><code>signals</code></h1>
 
-<p align="center">Loom's signal-based reactivity model, powered by <a href="https://github.com/AnatoleLucet/sig"><code>sig</code></a>.</p>
+<p align="center">Loom's signal-based reactive model, powered by <a href="https://github.com/AnatoleLucet/sig"><code>sig</code></a>.</p>
 
 ```go
 count, setCount := Signal(0)
