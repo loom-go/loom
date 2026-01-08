@@ -14,7 +14,7 @@ func TestFragment(t *testing.T) {
 		child2 := test.NewMockNode("child2")
 
 		fragment := Fragment(child1, child2)
-		err := loom.Render("parent", fragment)
+		_, err := loom.Render("parent", fragment)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 1, child1.MountCalls(), "child1 should be mounted once")

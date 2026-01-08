@@ -1,9 +1,9 @@
 package loom
 
-func Render(parent any, node Node) error {
+func Render(parent any, node Node) (*Slot, error) {
 	slot := NewSlot()
 	slot.SetNode(node)
 	slot.SetParent(parent)
 
-	return node.Mount(slot)
+	return slot, node.Mount(slot)
 }

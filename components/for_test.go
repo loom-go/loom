@@ -29,7 +29,7 @@ func TestFor(t *testing.T) {
 			children = append(children, child)
 			return child
 		})
-		err := loom.Render("parent", forNode)
+		_, err := loom.Render("parent", forNode)
 		assert.NoError(t, err)
 
 		assert.Len(t, children, 3, "should have created three children")
@@ -48,7 +48,7 @@ func TestFor(t *testing.T) {
 			children = append(children, child)
 			return child
 		})
-		err := loom.Render("parent", forNode)
+		_, err := loom.Render("parent", forNode)
 		assert.NoError(t, err)
 
 		assert.Len(t, children, 0, "should have created no children")
@@ -74,7 +74,7 @@ func TestFor(t *testing.T) {
 			return child
 		})
 
-		err := loom.Render("parent", forNode)
+		_, err := loom.Render("parent", forNode)
 		assert.NoError(t, err)
 
 		assert.Len(t, children, 3, "should have created three children")
@@ -111,7 +111,7 @@ func TestFor(t *testing.T) {
 			return child
 		})
 
-		err := loom.Render("parent", forNode)
+		_, err := loom.Render("parent", forNode)
 		assert.NoError(t, err)
 
 		assert.Len(t, children, 3, "should have created three children")
@@ -152,7 +152,7 @@ func TestFor(t *testing.T) {
 			return child
 		})
 
-		err := loom.Render("parent", forNode)
+		_, err := loom.Render("parent", forNode)
 		assert.NoError(t, err)
 
 		assert.Len(t, children, 4, "should have created four children")
@@ -201,7 +201,7 @@ func TestFor(t *testing.T) {
 			return child
 		})
 
-		err := loom.Render("parent", forNode)
+		_, err := loom.Render("parent", forNode)
 		assert.NoError(t, err)
 
 		assert.Len(t, children, 5, "should have created five children")
@@ -246,7 +246,7 @@ func TestFor(t *testing.T) {
 			return child
 		})
 
-		err := loom.Render("parent", forNode)
+		_, err := loom.Render("parent", forNode)
 		assert.NoError(t, err)
 
 		assert.Len(t, children, 5, "should have created five children")
@@ -293,7 +293,7 @@ func TestFor(t *testing.T) {
 			return child
 		})
 
-		err := loom.Render("parent", forNode)
+		_, err := loom.Render("parent", forNode)
 		assert.NoError(t, err)
 
 		assert.Len(t, children, 5, "should have created five children")
@@ -333,7 +333,7 @@ func TestFor(t *testing.T) {
 			return child
 		})
 
-		err := loom.Render("parent", forNode)
+		_, err := loom.Render("parent", forNode)
 		assert.NoError(t, err)
 
 		assert.Len(t, children, 3, "should have created three children")
@@ -386,7 +386,7 @@ func TestFor(t *testing.T) {
 				return child
 			})
 
-		err := loom.Render("parent", forNode)
+		_, err := loom.Render("parent", forNode)
 		assert.NoError(t, err)
 
 		assert.Len(t, children, 3, "should have created three children")

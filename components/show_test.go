@@ -17,7 +17,7 @@ func TestShow(t *testing.T) {
 		show := Show(display, func() loom.Node {
 			return Fragment(Fragment(), child, Fragment())
 		})
-		err := loom.Render("parent", show)
+		_, err := loom.Render("parent", show)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 0, child.MountCalls(), "child should not be mounted")
@@ -32,7 +32,7 @@ func TestShow(t *testing.T) {
 		show := Show(display, func() loom.Node {
 			return child
 		})
-		err := loom.Render("parent", show)
+		_, err := loom.Render("parent", show)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 0, child.MountCalls(), "child should not be mounted")
@@ -53,7 +53,7 @@ func TestShow(t *testing.T) {
 			renderFnCalls++
 			return child
 		})
-		err := loom.Render("parent", show)
+		_, err := loom.Render("parent", show)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 0, child.MountCalls(), "child should not be mounted")
@@ -75,7 +75,7 @@ func TestShow(t *testing.T) {
 			signals.OnCleanup(func() { cleanupCalls++ })
 			return child
 		})
-		err := loom.Render("parent", show)
+		_, err := loom.Render("parent", show)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 0, child.MountCalls(), "child should not be mounted")

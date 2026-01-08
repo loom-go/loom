@@ -30,6 +30,12 @@ func Untrack[T any](fn func() T) T {
 	return sig.Untrack(fn)
 }
 
+type Context[T any] = sig.Context[T]
+
+func NewContext[T any](defaultValue T) *Context[T] {
+	return sig.NewContext(defaultValue)
+}
+
 type Owner = sig.Owner
 
 func NewOwner() *Owner {

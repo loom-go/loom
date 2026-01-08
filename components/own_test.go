@@ -15,7 +15,7 @@ func TestOwn(t *testing.T) {
 		child := test.NewMockNode("child")
 
 		own := Own(owner, Fragment(Fragment(), child, Fragment()))
-		err := loom.Render("parent", own)
+		_, err := loom.Render("parent", own)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 1, child.MountCalls(), "child should be mounted once")
@@ -31,7 +31,7 @@ func TestOwn(t *testing.T) {
 		})
 
 		own := Own(owner, child)
-		err := loom.Render("parent", own)
+		_, err := loom.Render("parent", own)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 1, child.MountCalls(), "child should be mounted once")

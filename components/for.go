@@ -3,6 +3,7 @@ package components
 import (
 	"errors"
 	"reflect"
+	"sync/atomic"
 
 	"github.com/AnatoleLucet/loom"
 	"github.com/AnatoleLucet/loom/signals"
@@ -60,7 +61,8 @@ func (n *forNode[T]) ID() string {
 }
 
 func (n *forNode[T]) Mount(slot *loom.Slot) (err error) {
-	initial := true
+	var initial atomic.Bool
+	initial.Store(true)
 
 	signals.Effect(func() {
 		newItems := n.input()
@@ -94,10 +96,10 @@ func (n *forNode[T]) Mount(slot *loom.Slot) (err error) {
 			return err
 		})
 
-		if err != nil && !initial {
+		if err != nil && !initial.Load() {
 			panic(err)
 		}
-		initial = false
+		initial.Store(false)
 	})
 
 	return err

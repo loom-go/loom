@@ -17,7 +17,7 @@ func TestBind(t *testing.T) {
 		bind := Bind(func() loom.Node {
 			return Fragment(child1, child2)
 		})
-		err := loom.Render("parent", bind)
+		_, err := loom.Render("parent", bind)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 1, child1.MountCalls(), "child1 should be mounted once")
@@ -32,7 +32,7 @@ func TestBind(t *testing.T) {
 			count()
 			return child
 		})
-		err := loom.Render("parent", bind)
+		_, err := loom.Render("parent", bind)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 1, child.MountCalls(), "child should be mounted once")
@@ -49,7 +49,7 @@ func TestBind(t *testing.T) {
 			return Fragment(Fragment(), child, Fragment())
 		})
 
-		err := loom.Render("parent", bind)
+		_, err := loom.Render("parent", bind)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 1, child.MountCalls(), "child should be mounted once")
@@ -67,7 +67,7 @@ func TestBind(t *testing.T) {
 			}
 			return Fragment()
 		})
-		err := loom.Render("parent", bind)
+		_, err := loom.Render("parent", bind)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 1, child.MountCalls(), "child should be mounted once")
@@ -86,7 +86,7 @@ func TestBind(t *testing.T) {
 			count()
 			return Fragment()
 		})
-		err := loom.Render("parent", bind)
+		_, err := loom.Render("parent", bind)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 0, cleanupCalls, "cleanup should not be called yet")
@@ -109,7 +109,7 @@ func TestBind(t *testing.T) {
 				return childB
 			}))
 		})
-		err := loom.Render("parent", bind)
+		_, err := loom.Render("parent", bind)
 		assert.NoError(t, err)
 
 		assert.Equal(t, 1, childA.MountCalls(), "childA should be mounted once")

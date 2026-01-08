@@ -1,6 +1,8 @@
 package components
 
 import (
+	"sync/atomic"
+
 	"github.com/AnatoleLucet/loom"
 	"github.com/AnatoleLucet/loom/signals"
 )
@@ -24,7 +26,8 @@ func (n *bindNode) ID() string {
 }
 
 func (n *bindNode) Mount(slot *loom.Slot) (err error) {
-	initial := true
+	var initial atomic.Bool
+	initial.Store(true)
 
 	signals.Effect(func() {
 		node := n.fn()
@@ -33,10 +36,10 @@ func (n *bindNode) Mount(slot *loom.Slot) (err error) {
 			return slot.RenderChildren(node)
 		})
 
-		if err != nil && !initial {
+		if err != nil && !initial.Load() {
 			panic(err)
 		}
-		initial = false
+		initial.Store(false)
 	})
 
 	return err

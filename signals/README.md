@@ -106,3 +106,25 @@ Effect(func() {
 
 setCount(10) // *nothing*
 ```
+
+#### `Context`
+
+```go
+ctx := NewContext("light") // default value
+
+owner := sig.NewOwner()
+owner.Run(func() error {
+    ctx.Set("dark")
+
+    sig.NewOwner().Run(func() error {
+        theme := ctx.Get() // dark
+
+        return nil
+    })
+
+    return nil
+})
+
+theme := ctx.Get() // returns default value
+fmt.Println(theme)
+```
