@@ -6,7 +6,8 @@ import (
 
 // Slot represents a space where a Node can be rendered.
 type Slot struct {
-	mu sync.RWMutex
+	mu       sync.RWMutex
+	renderMu sync.Mutex
 
 	parent any
 	self   any
@@ -72,11 +73,16 @@ func (s *Slot) Child(index int) *Slot {
 }
 
 func (s *Slot) RenderChildren(children ...Node) error {
+	s.renderMu.Lock()
+	defer s.renderMu.Unlock()
+
+	s.mu.Lock()
 	parent := s.self
 	if parent == nil {
 		// fallback to parent for transparent nodes (fragement, bind, show, etc.)
 		parent = s.parent
 	}
+	s.mu.Unlock()
 
 	for i, child := range children {
 		childSlot := s.Child(i)
@@ -99,10 +105,8 @@ func (s *Slot) RenderChildren(children ...Node) error {
 		}
 	}
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	// unmount extra children
+	s.mu.Lock()
 	if extra := len(s.children) - len(children); extra > 0 {
 		start := len(children)
 
@@ -115,15 +119,21 @@ func (s *Slot) RenderChildren(children ...Node) error {
 
 		s.children = s.children[:start]
 	}
+	s.mu.Unlock()
 
 	return nil
 }
 
 func (s *Slot) AppendChildren(children ...Node) error {
+	s.renderMu.Lock()
+	defer s.renderMu.Unlock()
+
+	s.mu.Lock()
 	parent := s.self
 	if parent == nil {
 		parent = s.parent
 	}
+	s.mu.Unlock()
 
 	start := len(s.children)
 	for i, child := range children {
@@ -147,8 +157,9 @@ func (s *Slot) AppendChildren(children ...Node) error {
 func (s *Slot) Unmount() error {
 	s.UnmountChildren()
 
-	if s.Mounted() {
-		err := s.Node().Unmount(s)
+	node := s.Node()
+	if node != nil {
+		err := node.Unmount(s)
 		if err != nil {
 			return err
 		}
@@ -161,6 +172,9 @@ func (s *Slot) Unmount() error {
 }
 
 func (s *Slot) UnmountChildren() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	for _, child := range s.children {
 		err := child.Unmount()
 		if err != nil {

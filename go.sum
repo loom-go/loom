@@ -10,6 +10,12 @@ github.com/AnatoleLucet/sig v0.0.0-20260119131359-309532c69851 h1:PXRrfMGMUt9Flf
 github.com/AnatoleLucet/sig v0.0.0-20260119131359-309532c69851/go.mod h1:R9eHfMPg6gNCgM185K2uPYM8xxQZE4HZq+jw3DoeHQU=
 github.com/AnatoleLucet/sig v0.0.0-20260119133435-e491448b1e3a h1:kRggtuoTahAnl7s7I2P9YEHiGw+i9mVRSN/T2uYubGU=
 github.com/AnatoleLucet/sig v0.0.0-20260119133435-e491448b1e3a/go.mod h1:R9eHfMPg6gNCgM185K2uPYM8xxQZE4HZq+jw3DoeHQU=
+github.com/AnatoleLucet/sig v0.0.0-20260122152607-4a04aaa7dbf2 h1:NQs4zy8XfIO7qZKBwOaLm/5Updtt6Wfo6tVG/pcorIM=
+github.com/AnatoleLucet/sig v0.0.0-20260122152607-4a04aaa7dbf2/go.mod h1:R9eHfMPg6gNCgM185K2uPYM8xxQZE4HZq+jw3DoeHQU=
+github.com/AnatoleLucet/sig v0.0.0-20260122161504-a8271984b06c h1:zwt9SxRP8Sv3iVTJ1d6SGdMUUNoZPhg7gDc+H1moV1Q=
+github.com/AnatoleLucet/sig v0.0.0-20260122161504-a8271984b06c/go.mod h1:R9eHfMPg6gNCgM185K2uPYM8xxQZE4HZq+jw3DoeHQU=
+github.com/AnatoleLucet/sig v0.0.0-20260123140131-6df905a6eb36 h1:eZL4PMQcDvWq8MEt8TwqmXp/gTvu8TonnfuAZuHJAds=
+github.com/AnatoleLucet/sig v0.0.0-20260123140131-6df905a6eb36/go.mod h1:R9eHfMPg6gNCgM185K2uPYM8xxQZE4HZq+jw3DoeHQU=
 github.com/petermattis/goid v0.0.0-20251121121749-a11dd1a45f9a h1:VweslR2akb/ARhXfqSfRbj1vpWwYXf3eeAUyw/ndms0=
 github.com/petermattis/goid v0.0.0-20251121121749-a11dd1a45f9a/go.mod h1:pxMtw7cyUw6B2bRH0ZBANSPg+AoSud1I1iyJHI69jH4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=

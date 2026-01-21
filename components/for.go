@@ -64,7 +64,7 @@ func (n *forNode[T]) Mount(slot *loom.Slot) (err error) {
 	var initial atomic.Bool
 	initial.Store(true)
 
-	signals.Effect(func() {
+	signals.RenderEffect(func() {
 		newItems := n.input()
 
 		err = n.renderOwner.Run(func() error {

@@ -29,7 +29,7 @@ func (n *bindNode) Mount(slot *loom.Slot) (err error) {
 	var initial atomic.Bool
 	initial.Store(true)
 
-	signals.Effect(func() {
+	signals.RenderEffect(func() {
 		node := n.fn()
 
 		err := n.renderOwner.Run(func() error {

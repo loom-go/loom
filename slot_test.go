@@ -1,7 +1,9 @@
 package loom_test
 
 import (
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/AnatoleLucet/loom"
 	"github.com/AnatoleLucet/loom/test"
@@ -688,5 +690,34 @@ func TestSlot_Freestyle(t *testing.T) {
 		assert.Equal(t, 2, child2.UpdateCalls(), "child2 should be updated again")
 		assert.Equal(t, 1, child6.MountCalls(), "child6 should be mounted")
 		assert.Equal(t, 1, child7.MountCalls(), "child7 should be mounted")
+	})
+
+	t.Run("updating node while its mounting", func(t *testing.T) {
+		slot := loom.NewSlot()
+		slot.SetParent("parent")
+
+		child := test.NewMockNode("child")
+		child.OnMount(func() {
+			time.Sleep(10 * time.Millisecond) // simulate work on mount
+			slot.SetSelf("mounted")
+		})
+		child.OnUpdate(func() {
+			assert.Equal(t, "mounted", slot.Self(), "self should be set during update")
+		})
+
+		var wg sync.WaitGroup
+
+		wg.Go(func() {
+			err := slot.RenderChildren(child)
+			assert.NoError(t, err)
+		})
+
+		wg.Go(func() {
+			time.Sleep(1 * time.Millisecond) // ensure this runs during mount
+			err := slot.RenderChildren(child)
+			assert.NoError(t, err)
+		})
+
+		wg.Wait()
 	})
 }

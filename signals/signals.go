@@ -18,12 +18,28 @@ func Effect(effect func()) {
 	sig.NewEffect(effect)
 }
 
+func RenderEffect(effect func()) {
+	sig.NewRenderEffect(effect)
+}
+
 func Batch(fn func()) {
 	sig.NewBatch(fn)
 }
 
 func OnCleanup(fn func()) {
 	sig.OnCleanup(fn)
+}
+
+func OnSettled(fn func()) {
+	sig.OnSettled(fn)
+}
+
+func OnUserSettled(fn func()) {
+	sig.OnUserSettled(fn)
+}
+
+func OnRenderSettled(fn func()) {
+	sig.OnRenderSettled(fn)
 }
 
 func Untrack[T any](fn func() T) T {
