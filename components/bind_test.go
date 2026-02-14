@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/AnatoleLucet/loom"
-	"github.com/AnatoleLucet/loom/signals"
 	"github.com/AnatoleLucet/loom/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,7 +24,7 @@ func TestBind(t *testing.T) {
 	})
 
 	t.Run("updates children", func(t *testing.T) {
-		count, setCount := signals.Signal(0)
+		count, setCount := Signal(0)
 		child := test.NewMockNode("child")
 
 		bind := Bind(func() loom.Node {
@@ -41,7 +40,7 @@ func TestBind(t *testing.T) {
 	})
 
 	t.Run("updates nested children", func(t *testing.T) {
-		count, setCount := signals.Signal(0)
+		count, setCount := Signal(0)
 		child := test.NewMockNode("child")
 
 		bind := Bind(func() loom.Node {
@@ -58,7 +57,7 @@ func TestBind(t *testing.T) {
 	})
 
 	t.Run("unmounts children", func(t *testing.T) {
-		count, setCount := signals.Signal(0)
+		count, setCount := Signal(0)
 		child := test.NewMockNode("child")
 
 		bind := Bind(func() loom.Node {
@@ -79,10 +78,10 @@ func TestBind(t *testing.T) {
 
 	t.Run("cleanups the render function", func(t *testing.T) {
 		cleanupCalls := 0
-		count, setCount := signals.Signal(0)
+		count, setCount := Signal(0)
 
 		bind := Bind(func() loom.Node {
-			signals.OnCleanup(func() { cleanupCalls++ })
+			OnCleanup(func() { cleanupCalls++ })
 			count()
 			return Fragment()
 		})
@@ -97,8 +96,8 @@ func TestBind(t *testing.T) {
 	})
 
 	t.Run("nested Bind calls", func(t *testing.T) {
-		countA, setCountA := signals.Signal(0)
-		countB, setCountB := signals.Signal(0)
+		countA, setCountA := Signal(0)
+		countB, setCountB := Signal(0)
 		childA := test.NewMockNode("childA")
 		childB := test.NewMockNode("childB")
 
@@ -121,5 +120,51 @@ func TestBind(t *testing.T) {
 		setCountA(1)
 		assert.Equal(t, 1, childA.UpdateCalls(), "childA should be updated once")
 		assert.Equal(t, 1, childB.UpdateCalls(), "childB should not be updated again")
+	})
+
+	t.Run("conditional nested Bind calls", func(t *testing.T) {
+		count, setCount := Signal(0)
+		visible, setVisible := Signal(true)
+
+		child := test.NewMockNode("child")
+
+		rootBindCalls := 0
+		innerBindCalls := 0
+		innerCleanupCalls := 0
+
+		bind := Bind(func() loom.Node {
+			rootBindCalls++
+
+			if !visible() {
+				return Fragment()
+			}
+
+			return Fragment(Bind(func() loom.Node {
+				innerBindCalls++
+				OnCleanup(func() { innerCleanupCalls++ })
+
+				count()
+				return child
+			}))
+		})
+		_, err := loom.Render("parent", bind)
+		assert.NoError(t, err)
+
+		assert.Equal(t, 1, rootBindCalls, "root bind should be called once")
+		assert.Equal(t, 1, innerBindCalls, "inner bind should be called once")
+		assert.Equal(t, 1, child.MountCalls(), "child should be mounted once")
+		assert.Equal(t, 0, innerCleanupCalls, "inner cleanup should not be called yet")
+
+		setVisible(false)
+		assert.Equal(t, 2, rootBindCalls, "root bind should be called twice")
+		assert.Equal(t, 1, innerBindCalls, "inner bind should not be called again")
+		assert.Equal(t, 1, child.UnmountCalls(), "child should be unmounted once")
+		assert.Equal(t, 1, innerCleanupCalls, "inner cleanup should be called once")
+
+		setCount(1)
+		assert.Equal(t, 2, rootBindCalls, "root bind should not be called again")
+		assert.Equal(t, 1, innerBindCalls, "inner bind should not be called again")
+		assert.Equal(t, 1, child.UnmountCalls(), "child should still be unmounted")
+		assert.Equal(t, 1, innerCleanupCalls, "inner cleanup should still be called once")
 	})
 }

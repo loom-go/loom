@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/AnatoleLucet/loom"
-	"github.com/AnatoleLucet/loom/signals"
 	"github.com/AnatoleLucet/loom/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,10 +20,10 @@ func TestFor(t *testing.T) {
 	}
 
 	t.Run("renders items", func(t *testing.T) {
-		items, _ := signals.Signal([]string{"A", "B", "C"})
+		items, _ := Signal([]string{"A", "B", "C"})
 
 		var children []*test.MockNode
-		forNode := For(items, func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+		forNode := For(items, func(item Accessor[string], index Accessor[int]) loom.Node {
 			child := test.NewMockNode(fmt.Sprintf("item-%s-%d", item(), index()))
 			children = append(children, child)
 			return child
@@ -40,10 +39,10 @@ func TestFor(t *testing.T) {
 	})
 
 	t.Run("renders empty list", func(t *testing.T) {
-		items, _ := signals.Signal([]string{})
+		items, _ := Signal([]string{})
 
 		var children []*test.MockNode
-		forNode := For(items, func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+		forNode := For(items, func(item Accessor[string], index Accessor[int]) loom.Node {
 			child := test.NewMockNode(fmt.Sprintf("item-%s-%d", item(), index()))
 			children = append(children, child)
 			return child
@@ -55,14 +54,14 @@ func TestFor(t *testing.T) {
 	})
 
 	t.Run("appends new items", func(t *testing.T) {
-		items, setItems := signals.Signal([]string{"A", "B", "C"})
+		items, setItems := Signal([]string{"A", "B", "C"})
 
 		renderCalls := 0
 		var children []*test.MockNode
-		var itemAccessors []signals.Accessor[string]
-		var indexAccessors []signals.Accessor[int]
+		var itemAccessors []Accessor[string]
+		var indexAccessors []Accessor[int]
 
-		forNode := For(items, func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+		forNode := For(items, func(item Accessor[string], index Accessor[int]) loom.Node {
 			renderCalls++
 
 			child := test.NewMockNode(fmt.Sprintf("item-%s-%d", item(), index()))
@@ -93,14 +92,14 @@ func TestFor(t *testing.T) {
 	})
 
 	t.Run("prepends new items", func(t *testing.T) {
-		items, setItems := signals.Signal([]string{"C", "D", "E"})
+		items, setItems := Signal([]string{"C", "D", "E"})
 
 		renderCalls := 0
 		var children []*test.MockNode
-		var itemAccessors []signals.Accessor[string]
-		var indexAccessors []signals.Accessor[int]
+		var itemAccessors []Accessor[string]
+		var indexAccessors []Accessor[int]
 
-		forNode := For(items, func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+		forNode := For(items, func(item Accessor[string], index Accessor[int]) loom.Node {
 			renderCalls++
 
 			child := test.NewMockNode(fmt.Sprintf("item-%s-%d", item(), index()))
@@ -135,13 +134,13 @@ func TestFor(t *testing.T) {
 	})
 
 	t.Run("inserts items in middle", func(t *testing.T) {
-		items, setItems := signals.Signal([]string{"A", "B", "D", "E"})
+		items, setItems := Signal([]string{"A", "B", "D", "E"})
 
 		renderCalls := 0
 		var children []*test.MockNode
-		var itemAccessors []signals.Accessor[string]
-		var indexAccessors []signals.Accessor[int]
-		forNode := For(items, func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+		var itemAccessors []Accessor[string]
+		var indexAccessors []Accessor[int]
+		forNode := For(items, func(item Accessor[string], index Accessor[int]) loom.Node {
 			renderCalls++
 
 			child := test.NewMockNode(fmt.Sprintf("item-%s-%d", item(), index()))
@@ -176,15 +175,15 @@ func TestFor(t *testing.T) {
 	})
 
 	t.Run("removes items from end", func(t *testing.T) {
-		items, setItems := signals.Signal([]string{"A", "B", "C", "D", "E"})
+		items, setItems := Signal([]string{"A", "B", "C", "D", "E"})
 
 		renderCalls := 0
 		cleanupCalls := 0
 		var children []*test.MockNode
-		var itemAccessors []signals.Accessor[string]
-		var indexAccessors []signals.Accessor[int]
+		var itemAccessors []Accessor[string]
+		var indexAccessors []Accessor[int]
 
-		forNode := For(items, func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+		forNode := For(items, func(item Accessor[string], index Accessor[int]) loom.Node {
 			renderCalls++
 
 			child := test.NewMockNode(fmt.Sprintf("item-%s-%d", item(), index()))
@@ -193,7 +192,7 @@ func TestFor(t *testing.T) {
 			itemAccessors = append(itemAccessors, item)
 			indexAccessors = append(indexAccessors, index)
 
-			signals.OnCleanup(func() {
+			OnCleanup(func() {
 				cleanupCalls++
 				children = removeChild(children, child)
 			})
@@ -222,15 +221,15 @@ func TestFor(t *testing.T) {
 	})
 
 	t.Run("removes items from beginning", func(t *testing.T) {
-		items, setItems := signals.Signal([]string{"A", "B", "C", "D", "E"})
+		items, setItems := Signal([]string{"A", "B", "C", "D", "E"})
 
 		renderCalls := 0
 		cleanupCalls := 0
 		var children []*test.MockNode
-		var itemAccessors []signals.Accessor[string]
-		var indexAccessors []signals.Accessor[int]
+		var itemAccessors []Accessor[string]
+		var indexAccessors []Accessor[int]
 
-		forNode := For(items, func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+		forNode := For(items, func(item Accessor[string], index Accessor[int]) loom.Node {
 			renderCalls++
 
 			child := test.NewMockNode(fmt.Sprintf("item-%s-%d", item(), index()))
@@ -238,7 +237,7 @@ func TestFor(t *testing.T) {
 			itemAccessors = append(itemAccessors, item)
 			indexAccessors = append(indexAccessors, index)
 
-			signals.OnCleanup(func() {
+			OnCleanup(func() {
 				cleanupCalls++
 				children = removeChild(children, child)
 			})
@@ -269,15 +268,15 @@ func TestFor(t *testing.T) {
 	})
 
 	t.Run("removes items from middle", func(t *testing.T) {
-		items, setItems := signals.Signal([]string{"A", "B", "C", "D", "E"})
+		items, setItems := Signal([]string{"A", "B", "C", "D", "E"})
 
 		renderCalls := 0
 		cleanupCalls := 0
 		var children []*test.MockNode
-		var itemAccessors []signals.Accessor[string]
-		var indexAccessors []signals.Accessor[int]
+		var itemAccessors []Accessor[string]
+		var indexAccessors []Accessor[int]
 
-		forNode := For(items, func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+		forNode := For(items, func(item Accessor[string], index Accessor[int]) loom.Node {
 			renderCalls++
 
 			child := test.NewMockNode(fmt.Sprintf("item-%s-%d", item(), index()))
@@ -285,7 +284,7 @@ func TestFor(t *testing.T) {
 			itemAccessors = append(itemAccessors, item)
 			indexAccessors = append(indexAccessors, index)
 
-			signals.OnCleanup(func() {
+			OnCleanup(func() {
 				cleanupCalls++
 				children = removeChild(children, child)
 			})
@@ -317,16 +316,16 @@ func TestFor(t *testing.T) {
 	})
 
 	t.Run("clears all items", func(t *testing.T) {
-		items, setItems := signals.Signal([]string{"A", "B", "C"})
+		items, setItems := Signal([]string{"A", "B", "C"})
 
 		cleanupCalls := 0
 		var children []*test.MockNode
 
-		forNode := For(items, func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+		forNode := For(items, func(item Accessor[string], index Accessor[int]) loom.Node {
 			child := test.NewMockNode(fmt.Sprintf("item-%s-%d", item(), index()))
 			children = append(children, child)
 
-			signals.OnCleanup(func() {
+			OnCleanup(func() {
 				cleanupCalls++
 			})
 
@@ -354,7 +353,7 @@ func TestFor(t *testing.T) {
 			fn   func()
 		}
 
-		items, setItems := signals.Signal([]uncomparable{
+		items, setItems := Signal([]uncomparable{
 			{name: "A", fn: func() {}},
 			{name: "B", fn: func() {}},
 			{name: "C", fn: func() {}},
@@ -363,13 +362,13 @@ func TestFor(t *testing.T) {
 		renderCalls := 0
 		cleanupCalls := 0
 		var children []*test.MockNode
-		var itemAccessors []signals.Accessor[uncomparable]
-		var indexAccessors []signals.Accessor[int]
+		var itemAccessors []Accessor[uncomparable]
+		var indexAccessors []Accessor[int]
 
 		forNode := For(
 			items,
 			func(item uncomparable) any { return item.name },
-			func(item signals.Accessor[uncomparable], index signals.Accessor[int]) loom.Node {
+			func(item Accessor[uncomparable], index Accessor[int]) loom.Node {
 				renderCalls++
 
 				child := test.NewMockNode(fmt.Sprintf("item-%s-%d", item().name, index()))
@@ -378,7 +377,7 @@ func TestFor(t *testing.T) {
 				itemAccessors = append(itemAccessors, item)
 				indexAccessors = append(indexAccessors, index)
 
-				signals.OnCleanup(func() {
+				OnCleanup(func() {
 					cleanupCalls++
 					children = removeChild(children, child)
 				})
@@ -433,15 +432,15 @@ func TestFor(t *testing.T) {
 	})
 
 	t.Run("panics on mapper as keyer with extra mapper", func(t *testing.T) {
-		items, _ := signals.Signal([]string{"A"})
+		items, _ := Signal([]string{"A"})
 
 		assert.Panics(t, func() {
 			For(
 				items,
-				func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+				func(item Accessor[string], index Accessor[int]) loom.Node {
 					return test.NewMockNode("item1")
 				},
-				func(item signals.Accessor[string], index signals.Accessor[int]) loom.Node {
+				func(item Accessor[string], index Accessor[int]) loom.Node {
 					return test.NewMockNode("item2")
 				},
 			)
@@ -449,7 +448,7 @@ func TestFor(t *testing.T) {
 	})
 
 	t.Run("panics on keyer without mapper", func(t *testing.T) {
-		items, _ := signals.Signal([]string{"A"})
+		items, _ := Signal([]string{"A"})
 
 		assert.Panics(t, func() {
 			For(items, func(s string) any { return s })

@@ -6,22 +6,21 @@ import (
 	"sync/atomic"
 
 	"github.com/AnatoleLucet/loom"
-	"github.com/AnatoleLucet/loom/signals"
 	"github.com/AnatoleLucet/sig"
 )
 
 // ForKeyer represents either a key function or a mapper function for For().
 type ForKeyer[T any] interface {
-	func(T) any | func(signals.Accessor[T], signals.Accessor[int]) loom.Node
+	func(T) any | func(Accessor[T], Accessor[int]) loom.Node
 }
 
 func For[
 	T any,
 	Keyer ForKeyer[T],
 ](
-	items signals.Accessor[[]T],
+	items Accessor[[]T],
 	keyer Keyer,
-	mapper ...func(signals.Accessor[T], signals.Accessor[int]) loom.Node,
+	mapper ...func(Accessor[T], Accessor[int]) loom.Node,
 ) loom.Node {
 	keyerFn, mapperFn, err := parseForKeyer(keyer, mapper...)
 	if err != nil {
@@ -34,26 +33,26 @@ func For[
 		mapper: mapperFn,
 		keyer:  keyerFn,
 
-		renderOwner: signals.NewOwner(),
+		renderOwner: NewOwner(),
 	}
 }
 
 type forNode[T any] struct {
-	input signals.Accessor[[]T]
+	input Accessor[[]T]
 
 	keyer  func(T) any
-	mapper func(signals.Accessor[T], signals.Accessor[int]) loom.Node
+	mapper func(Accessor[T], Accessor[int]) loom.Node
 
 	// currently rendered items
 	mapped []loom.Node
 	// owners of the rendered items
-	owners []*signals.Owner
+	owners []*Owner
 	// signals for each item and index
 	items   []*sig.Signal[T]
 	indexes []*sig.Signal[int]
 
 	// owns the rendered children
-	renderOwner *signals.Owner
+	renderOwner *Owner
 }
 
 func (n *forNode[T]) ID() string {
@@ -64,7 +63,7 @@ func (n *forNode[T]) Mount(slot *loom.Slot) (err error) {
 	var initial atomic.Bool
 	initial.Store(true)
 
-	signals.RenderEffect(func() {
+	RenderEffect(func() {
 		newItems := n.input()
 
 		err = n.renderOwner.Run(func() error {
@@ -116,7 +115,7 @@ func (n *forNode[T]) Unmount(slot *loom.Slot) error {
 
 func (n *forNode[T]) initItems(items []T) {
 	n.mapped = make([]loom.Node, len(items))
-	n.owners = make([]*signals.Owner, len(items))
+	n.owners = make([]*Owner, len(items))
 	n.items = make([]*sig.Signal[T], len(items))
 	n.indexes = make([]*sig.Signal[int], len(items))
 
@@ -130,7 +129,7 @@ func (n *forNode[T]) initItem(index int, item *T) {
 	indexSignal := sig.NewSignal(index)
 
 	var node loom.Node
-	owner := signals.NewOwner()
+	owner := NewOwner()
 	owner.Run(func() error {
 		node = n.mapper(itemSignal.Read, indexSignal.Read)
 		return nil
@@ -149,7 +148,7 @@ func (n *forNode[T]) updateItems(newItems []T) {
 	// skip common prefix
 	for start < end {
 		newItem := newItems[start]
-		currItem := signals.Untrack(n.items[start].Read)
+		currItem := Untrack(n.items[start].Read)
 
 		if !n.compareItems(newItem, currItem) {
 			break
@@ -160,7 +159,7 @@ func (n *forNode[T]) updateItems(newItems []T) {
 	// skip common suffix
 	for end > start {
 		newItem := newItems[end-1]
-		currItem := signals.Untrack(n.items[end-1].Read)
+		currItem := Untrack(n.items[end-1].Read)
 
 		if !n.compareItems(newItem, currItem) {
 			break
@@ -168,7 +167,7 @@ func (n *forNode[T]) updateItems(newItems []T) {
 		end--
 	}
 
-	signals.Batch(func() {
+	Batch(func() {
 		// update existing items
 		for i := start; i < end; i++ {
 			newItem := newItems[i]
@@ -196,7 +195,7 @@ func (n *forNode[T]) resizeItems(newLen int) {
 	oldLen := len(n.mapped)
 	if newLen > oldLen {
 		n.mapped = append(n.mapped, make([]loom.Node, newLen-oldLen)...)
-		n.owners = append(n.owners, make([]*signals.Owner, newLen-oldLen)...)
+		n.owners = append(n.owners, make([]*Owner, newLen-oldLen)...)
 		n.items = append(n.items, make([]*sig.Signal[T], newLen-oldLen)...)
 		n.indexes = append(n.indexes, make([]*sig.Signal[int], newLen-oldLen)...)
 	} else {
@@ -229,13 +228,13 @@ func parseForKeyer[
 	Keyer ForKeyer[T],
 ](
 	keyer Keyer,
-	mapper ...func(signals.Accessor[T], signals.Accessor[int]) loom.Node,
+	mapper ...func(Accessor[T], Accessor[int]) loom.Node,
 ) (
 	func(T) any,
-	func(signals.Accessor[T], signals.Accessor[int]) loom.Node,
+	func(Accessor[T], Accessor[int]) loom.Node,
 	error,
 ) {
-	mapperFn, ok := any(keyer).(func(signals.Accessor[T], signals.Accessor[int]) loom.Node)
+	mapperFn, ok := any(keyer).(func(Accessor[T], Accessor[int]) loom.Node)
 	if ok {
 		if len(mapper) > 0 {
 			return nil, nil, errors.New("For: expected at most one mapper function")

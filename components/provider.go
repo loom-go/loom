@@ -2,20 +2,19 @@ package components
 
 import (
 	"github.com/AnatoleLucet/loom"
-	"github.com/AnatoleLucet/loom/signals"
 )
 
-func Provider[T any](ctx *signals.Context[T], value T, fn func() loom.Node) loom.Node {
+func Provider[T any](ctx *Context[T], value T, fn func() loom.Node) loom.Node {
 	return &providerNode[T]{
-		owner: signals.NewOwner(),
+		owner: NewOwner(),
 		ctx:   ctx,
 		value: value,
 		fn:    fn,
 	}
 }
 
-func ProviderBind[T any](ctx *signals.Context[T], value signals.Accessor[T], fn func() loom.Node) loom.Node {
-	owner := signals.NewOwner()
+func ProviderBind[T any](ctx *Context[T], value Accessor[T], fn func() loom.Node) loom.Node {
+	owner := NewOwner()
 
 	return Bind(func() loom.Node {
 		return &providerNode[T]{
@@ -28,8 +27,8 @@ func ProviderBind[T any](ctx *signals.Context[T], value signals.Accessor[T], fn 
 }
 
 type providerNode[T any] struct {
-	owner *signals.Owner
-	ctx   *signals.Context[T]
+	owner *Owner
+	ctx   *Context[T]
 	value T
 	fn    func() loom.Node
 }

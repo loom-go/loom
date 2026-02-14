@@ -4,14 +4,13 @@ import (
 	"testing"
 
 	"github.com/AnatoleLucet/loom"
-	"github.com/AnatoleLucet/loom/signals"
 	"github.com/AnatoleLucet/loom/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestOwn(t *testing.T) {
 	t.Run("renders children", func(t *testing.T) {
-		owner := signals.NewOwner()
+		owner := NewOwner()
 		child := test.NewMockNode("child")
 
 		own := Own(owner, Fragment(Fragment(), child, Fragment()))
@@ -22,12 +21,12 @@ func TestOwn(t *testing.T) {
 	})
 
 	t.Run("should owns children", func(t *testing.T) {
-		owner := signals.NewOwner()
+		owner := NewOwner()
 		child := test.NewMockNode("child")
 
 		cleanupCalls := 0
 		child.OnMount(func() {
-			signals.OnCleanup(func() { cleanupCalls++ })
+			OnCleanup(func() { cleanupCalls++ })
 		})
 
 		own := Own(owner, child)

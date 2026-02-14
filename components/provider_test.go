@@ -4,14 +4,13 @@ import (
 	"testing"
 
 	"github.com/AnatoleLucet/loom"
-	"github.com/AnatoleLucet/loom/signals"
 	"github.com/AnatoleLucet/loom/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestProvider(t *testing.T) {
 	t.Run("renders children", func(t *testing.T) {
-		ctx := signals.NewContext("default")
+		ctx := NewContext("default")
 		child := test.NewMockNode("child")
 
 		provider := Provider(ctx, "provided", func() loom.Node {
@@ -24,7 +23,7 @@ func TestProvider(t *testing.T) {
 	})
 
 	t.Run("provides context value to children", func(t *testing.T) {
-		ctx := signals.NewContext("default")
+		ctx := NewContext("default")
 
 		reads := []string{}
 		child := test.NewMockNode("child")
@@ -43,7 +42,7 @@ func TestProvider(t *testing.T) {
 	})
 
 	t.Run("nested providers", func(t *testing.T) {
-		ctx := signals.NewContext("default")
+		ctx := NewContext("default")
 
 		reads := []string{}
 		child := test.NewMockNode("child")
@@ -65,7 +64,7 @@ func TestProvider(t *testing.T) {
 	})
 
 	t.Run("default context value", func(t *testing.T) {
-		ctx := signals.NewContext("default")
+		ctx := NewContext("default")
 
 		reads := []string{}
 		child := test.NewMockNode("child")
@@ -90,8 +89,8 @@ func TestProvider(t *testing.T) {
 	})
 
 	t.Run("from accessor", func(t *testing.T) {
-		ctx := signals.NewContext("default")
-		value, setValue := signals.Signal("initial")
+		ctx := NewContext("default")
+		value, setValue := Signal("initial")
 
 		reads := []string{}
 		child := test.NewMockNode("child")
@@ -116,8 +115,8 @@ func TestProvider(t *testing.T) {
 	})
 
 	t.Run("in Bind", func(t *testing.T) {
-		ctx := signals.NewContext("default")
-		value, setValue := signals.Signal("initial")
+		ctx := NewContext("default")
+		value, setValue := Signal("initial")
 
 		reads := []string{}
 		child := test.NewMockNode("child")

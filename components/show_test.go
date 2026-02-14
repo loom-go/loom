@@ -4,14 +4,13 @@ import (
 	"testing"
 
 	"github.com/AnatoleLucet/loom"
-	"github.com/AnatoleLucet/loom/signals"
 	"github.com/AnatoleLucet/loom/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestShow(t *testing.T) {
 	t.Run("renders children", func(t *testing.T) {
-		display, setDisplay := signals.Signal(false)
+		display, setDisplay := Signal(false)
 		child := test.NewMockNode("child")
 
 		show := Show(display, func() loom.Node {
@@ -26,7 +25,7 @@ func TestShow(t *testing.T) {
 	})
 
 	t.Run("remounts children", func(t *testing.T) {
-		display, setDisplay := signals.Signal(false)
+		display, setDisplay := Signal(false)
 		child := test.NewMockNode("child")
 
 		show := Show(display, func() loom.Node {
@@ -45,7 +44,7 @@ func TestShow(t *testing.T) {
 	})
 
 	t.Run("dont rerender when already displayed", func(t *testing.T) {
-		display, setDisplay := signals.Signal(false)
+		display, setDisplay := Signal(false)
 		child := test.NewMockNode("child")
 
 		renderFnCalls := 0
@@ -67,12 +66,12 @@ func TestShow(t *testing.T) {
 	})
 
 	t.Run("cleans up render scope", func(t *testing.T) {
-		display, setDisplay := signals.Signal(false)
+		display, setDisplay := Signal(false)
 		child := test.NewMockNode("child")
 
 		cleanupCalls := 0
 		show := Show(display, func() loom.Node {
-			signals.OnCleanup(func() { cleanupCalls++ })
+			OnCleanup(func() { cleanupCalls++ })
 			return child
 		})
 		_, err := loom.Render("parent", show)

@@ -16,6 +16,8 @@ github.com/AnatoleLucet/sig v0.0.0-20260122161504-a8271984b06c h1:zwt9SxRP8Sv3iV
 github.com/AnatoleLucet/sig v0.0.0-20260122161504-a8271984b06c/go.mod h1:R9eHfMPg6gNCgM185K2uPYM8xxQZE4HZq+jw3DoeHQU=
 github.com/AnatoleLucet/sig v0.0.0-20260123140131-6df905a6eb36 h1:eZL4PMQcDvWq8MEt8TwqmXp/gTvu8TonnfuAZuHJAds=
 github.com/AnatoleLucet/sig v0.0.0-20260123140131-6df905a6eb36/go.mod h1:R9eHfMPg6gNCgM185K2uPYM8xxQZE4HZq+jw3DoeHQU=
+github.com/AnatoleLucet/sig v0.0.0-20260214194610-d88b27836003 h1:Xuho5YrleSh7VzWvGxOuwPvp8QmDysOq79jj8QtIa7A=
+github.com/AnatoleLucet/sig v0.0.0-20260214194610-d88b27836003/go.mod h1:R9eHfMPg6gNCgM185K2uPYM8xxQZE4HZq+jw3DoeHQU=
 github.com/petermattis/goid v0.0.0-20251121121749-a11dd1a45f9a h1:VweslR2akb/ARhXfqSfRbj1vpWwYXf3eeAUyw/ndms0=
 github.com/petermattis/goid v0.0.0-20251121121749-a11dd1a45f9a/go.mod h1:pxMtw7cyUw6B2bRH0ZBANSPg+AoSud1I1iyJHI69jH4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=

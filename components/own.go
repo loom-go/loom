@@ -2,18 +2,17 @@ package components
 
 import (
 	"github.com/AnatoleLucet/loom"
-	"github.com/AnatoleLucet/loom/signals"
 )
 
 // Own wraps a node so that it is managed by the given signals.Owner.
 // Note that disposing the owner will NOT unmount the node;
 // Own is only responsible assigning ownership of signals used within the node.
-func Own(owner *signals.Owner, node loom.Node) loom.Node {
+func Own(owner *Owner, node loom.Node) loom.Node {
 	return &ownNode{owner, node}
 }
 
 type ownNode struct {
-	owner *signals.Owner
+	owner *Owner
 	node  loom.Node
 }
 
