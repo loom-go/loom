@@ -9,9 +9,7 @@ import (
 // Bind creates a reactive Node that re-renders whenever any signal
 // accessed within the provided function changes.
 func Bind(fn func() loom.Node) loom.Node {
-	return &bindNode{
-		fn: fn,
-	}
+	return &bindNode{fn: fn}
 }
 
 type bindNode struct {

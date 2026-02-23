@@ -1,9 +1,28 @@
 package loom
 
-func Render(parent any, node Node) (*Slot, error) {
+import (
+	"fmt"
+
+	"github.com/AnatoleLucet/loom/signals"
+)
+
+func Render(parent any, node Node) (*signals.Owner, error) {
+	owner := signals.NewOwner()
+
 	slot := NewSlot()
 	slot.SetNode(node)
 	slot.SetParent(parent)
 
-	return slot, node.Mount(slot)
+	err := owner.Run(func() (err error) {
+		defer func() {
+			// should not happend during initial render, but just in case
+			if r := recover(); r != nil {
+				err = fmt.Errorf("%v", r)
+			}
+		}()
+
+		return node.Mount(slot)
+	})
+
+	return owner, err
 }
