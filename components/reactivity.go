@@ -80,12 +80,7 @@ func (c *component) Context() context.Context {
 }
 
 func (c *component) IsDisposed() bool {
-	select {
-	case <-c.ctx.Done():
-		return true
-	default:
-		return false
-	}
+	return c.ctx.Err() != nil
 }
 
 func (c *component) Disposed() <-chan struct{} {
