@@ -110,21 +110,42 @@ setCount(10) // *nothing*
 #### `Context`
 
 ```go
-ctx := NewContext("light") // default value
+theme, ThemeContext := NewContext("light") // default value
 
-owner := sig.NewOwner()
-owner.Run(func() error {
-    ctx.Set("dark")
+ThemeContext.Provide("dark", func() {
+    fmt.Println(theme()) // dark
 
-    sig.NewOwner().Run(func() error {
-        theme := ctx.Get() // dark
-
-        return nil
+    ThemeContext.Provide("system", func() {
+        fmt.Println(theme()) // system
     })
-
-    return nil
 })
 
-theme := ctx.Get() // returns default value
-fmt.Println(theme)
+fmt.Println(theme()) // returns default value (light)
+```
+
+#### `Store`
+
+```go
+type todo struct {
+    title string
+    done  bool
+}
+
+todos := Store([]todo{})
+
+// add a todo
+todos.Update(func(list []todo) {
+    return append(list, todo{title, false})
+})
+
+// mark a todo as done
+todos.Mutate(func(list *[]todo) {
+    list[0].done = true
+})
+
+// get a todo
+todo := todos.Get()[0]
+
+// reset
+todos.Set([]todo{})
 ```

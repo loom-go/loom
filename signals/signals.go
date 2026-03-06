@@ -4,8 +4,10 @@ import "github.com/AnatoleLucet/sig"
 
 type Accessor[T any] func() T
 
-func Signal[T any](initial T) (Accessor[T], func(T)) {
-	s := sig.NewSignal(initial)
+type SignalOptions[T any] = sig.SignalOptions[T]
+
+func Signal[T any](initial T, options ...SignalOptions[T]) (Accessor[T], func(T)) {
+	s := sig.NewSignal(initial, options...)
 	return s.Read, s.Write
 }
 
@@ -20,6 +22,10 @@ func Effect(effect func()) {
 
 func RenderEffect(effect func()) {
 	sig.NewRenderEffect(effect)
+}
+
+func Untrack[T any](fn func() T) T {
+	return sig.Untrack(fn)
 }
 
 func Batch(fn func()) {
@@ -40,20 +46,4 @@ func OnUserSettled(fn func()) {
 
 func OnRenderSettled(fn func()) {
 	sig.OnRenderSettled(fn)
-}
-
-func Untrack[T any](fn func() T) T {
-	return sig.Untrack(fn)
-}
-
-type Context[T any] = sig.Context[T]
-
-func NewContext[T any](defaultValue T) *Context[T] {
-	return sig.NewContext(defaultValue)
-}
-
-type Owner = sig.Owner
-
-func NewOwner() *Owner {
-	return sig.NewOwner()
 }

@@ -72,10 +72,7 @@ func (s *Slot) Child(index int) *Slot {
 	return s.children[index]
 }
 
-func (s *Slot) RenderChildren(children ...Node) error {
-	s.renderMu.Lock()
-	defer s.renderMu.Unlock()
-
+func (s *Slot) RenderChild(i int, child Node) error {
 	s.mu.Lock()
 	parent := s.self
 	if parent == nil {
@@ -84,22 +81,30 @@ func (s *Slot) RenderChildren(children ...Node) error {
 	}
 	s.mu.Unlock()
 
+	childSlot := s.Child(i)
+	childSlot.SetParent(parent)
+
+	var err error
+	if child == nil {
+		err = childSlot.ReplaceWith(nil)
+	} else if !childSlot.Mounted() {
+		childSlot.SetNode(child)
+		err = child.Mount(childSlot)
+	} else if childSlot.Node().ID() == child.ID() {
+		err = child.Update(childSlot)
+	} else {
+		err = childSlot.ReplaceWith(child)
+	}
+
+	return err
+}
+
+func (s *Slot) RenderChildren(children ...Node) error {
+	s.renderMu.Lock()
+	defer s.renderMu.Unlock()
+
 	for i, child := range children {
-		childSlot := s.Child(i)
-		childSlot.SetParent(parent)
-
-		var err error
-		if child == nil {
-			err = childSlot.ReplaceWith(nil)
-		} else if !childSlot.Mounted() {
-			childSlot.SetNode(child)
-			err = child.Mount(childSlot)
-		} else if childSlot.Node().ID() == child.ID() {
-			err = child.Update(childSlot)
-		} else {
-			err = childSlot.ReplaceWith(child)
-		}
-
+		err := s.RenderChild(i, child)
 		if err != nil {
 			return err
 		}

@@ -1,56 +1,29 @@
 package components
 
 import (
-	"errors"
-	"reflect"
 	"sync/atomic"
 
 	"github.com/AnatoleLucet/loom"
 	"github.com/AnatoleLucet/sig"
 )
 
-// ForKeyer represents either a key function or a mapper function for For().
-type ForKeyer[T any] interface {
-	func(T) any | func(Accessor[T], Accessor[int]) loom.Node
-}
-
-func For[
-	T any,
-	Keyer ForKeyer[T],
-](
-	items Accessor[[]T],
-	keyer Keyer,
-	mapper ...func(Accessor[T], Accessor[int]) loom.Node,
+func For[T any](
+	items Accessor[[]*T],
+	mapper func(*T, Accessor[int]) loom.Node,
 ) loom.Node {
-	keyerFn, mapperFn, err := parseForKeyer(keyer, mapper...)
-	if err != nil {
-		panic(err)
-	}
-
 	return &forNode[T]{
-		input: items,
-
-		mapper: mapperFn,
-		keyer:  keyerFn,
-
+		input:       items,
+		mapper:      mapper,
 		renderOwner: NewOwner(),
 	}
 }
 
 type forNode[T any] struct {
-	input Accessor[[]T]
-
-	keyer  func(T) any
-	mapper func(Accessor[T], Accessor[int]) loom.Node
+	input  Accessor[[]*T]
+	mapper func(*T, Accessor[int]) loom.Node
 
 	// currently rendered items
-	mapped []loom.Node
-	// owners of the rendered items
-	owners []*Owner
-	// signals for each item and index
-	items   []*sig.Signal[T]
-	indexes []*sig.Signal[int]
-
+	items []*forItem[T]
 	// owns the rendered children
 	renderOwner *Owner
 }
@@ -67,32 +40,7 @@ func (n *forNode[T]) Mount(slot *loom.Slot) (err error) {
 		newItems := n.input()
 
 		err = n.renderOwner.Run(func() error {
-			// fast path for empty list
-			if len(newItems) == 0 {
-				n.disposeItems()
-				return slot.UnmountChildren()
-			}
-
-			// fast path for create
-			if len(n.mapped) == 0 {
-				n.initItems(newItems)
-				return slot.RenderChildren(n.mapped...)
-			}
-
-			// update existing items
-			oldLen := len(n.mapped)
-			n.updateItems(newItems)
-			newLen := len(n.mapped)
-
-			if newLen > oldLen {
-				err = slot.AppendChildren(n.mapped[oldLen:]...)
-			} else if newLen < oldLen {
-				for i := oldLen - 1; i >= newLen; i-- {
-					err = slot.UnmountChild(i)
-				}
-			}
-
-			return err
+			return n.reconcile(slot, newItems)
 		})
 
 		if err != nil && !initial.Load() {
@@ -109,150 +57,144 @@ func (n *forNode[T]) Update(slot *loom.Slot) error {
 }
 
 func (n *forNode[T]) Unmount(slot *loom.Slot) error {
-	n.disposeItems()
+	n.disposeAll()
 	return nil
 }
 
-func (n *forNode[T]) initItems(items []T) {
-	n.mapped = make([]loom.Node, len(items))
-	n.owners = make([]*Owner, len(items))
-	n.items = make([]*sig.Signal[T], len(items))
-	n.indexes = make([]*sig.Signal[int], len(items))
+func (n *forNode[T]) reconcile(slot *loom.Slot, newItems []*T) error {
+	oldLen := len(n.items)
+	newLen := len(newItems)
+	result := make([]*forItem[T], newLen)
 
+	// fast path for empty list
+	if newLen == 0 {
+		n.disposeAll()
+		return slot.UnmountChildren()
+	}
+
+	// fast path for create
+	if oldLen == 0 {
+		n.initItems(newItems)
+		return slot.RenderChildren(n.nodes()...)
+	}
+
+	// common prefix
+	start := 0
+	for start < oldLen && start < newLen && n.items[start].value == newItems[start] {
+		result[start] = n.items[start]
+		start++
+	}
+
+	// common suffix
+	oldEnd := oldLen - 1
+	newEnd := newLen - 1
+	for oldEnd >= start && newEnd >= start && n.items[oldEnd].value == newItems[newEnd] {
+		result[newEnd] = n.items[oldEnd]
+		oldEnd--
+		newEnd--
+	}
+
+	// index map for new window [start...newEnd]
+	indices := make(map[*T]int, newEnd-start+1)
+	for i := start; i <= newEnd; i++ {
+		indices[newItems[i]] = i
+	}
+
+	moved := make([]*forItem[T], newLen)
+
+	// walk old window [start...oldEnd]. collect in moved if item is in new window, dispose if not
+	for i := start; i <= oldEnd; i++ {
+		item := n.items[i]
+		if j, ok := indices[item.value]; ok {
+			moved[j] = item
+			delete(indices, item.value)
+		} else {
+			item.owner.Dispose()
+		}
+
+		// always unmount since it either moved or was removed
+		if err := slot.UnmountChild(i); err != nil {
+			return err
+		}
+	}
+
+	// fill new window [start...newEnd]. create or reuse from temp
+	for i := start; i <= newEnd; i++ {
+		if moved[i] != nil {
+			result[i] = moved[i]
+		} else {
+			result[i] = n.initItem(i, newItems[i])
+		}
+
+		if err := slot.RenderChild(i, result[i]); err != nil {
+			return err
+		}
+	}
+
+	n.items = result
+	return nil
+}
+
+func (n *forNode[T]) nodes() []loom.Node {
+	nodes := make([]loom.Node, len(n.items))
+	for i, item := range n.items {
+		nodes[i] = item
+	}
+	return nodes
+}
+
+func (n *forNode[T]) initItems(items []*T) {
 	for i, item := range items {
-		n.initItem(i, &item)
+		n.items = append(n.items, n.initItem(i, item))
 	}
 }
 
-func (n *forNode[T]) initItem(index int, item *T) {
-	itemSignal := sig.NewSignal(*item)
+func (n *forNode[T]) initItem(index int, item *T) *forItem[T] {
 	indexSignal := sig.NewSignal(index)
 
 	var node loom.Node
 	owner := NewOwner()
 	owner.Run(func() error {
-		node = n.mapper(itemSignal.Read, indexSignal.Read)
+		node = n.mapper(item, indexSignal.Read)
 		return nil
 	})
 
-	n.mapped[index] = node
-	n.owners[index] = owner
-	n.items[index] = itemSignal
-	n.indexes[index] = indexSignal
+	return &forItem[T]{
+		value: item,
+		node:  node,
+		owner: owner,
+		index: indexSignal,
+	}
 }
 
-func (n *forNode[T]) updateItems(newItems []T) {
-	start := 0
-	end := min(len(n.mapped), len(newItems))
+func (n *forNode[T]) disposeAll() {
+	n.renderOwner.Dispose()
+	n.items = nil
+}
 
-	// skip common prefix
-	for start < end {
-		newItem := newItems[start]
-		currItem := Untrack(n.items[start].Read)
+// used to make sure children are owned by the owner
+// and the reactive scope can stay active when items are moved in the list
+type forItem[T any] struct {
+	value *T
+	node  loom.Node
+	owner *Owner
+	index *sig.Signal[int]
+}
 
-		if !n.compareItems(newItem, currItem) {
-			break
-		}
-		start++
-	}
+func (n *forItem[T]) ID() string {
+	return "loom.forItem"
+}
 
-	// skip common suffix
-	for end > start {
-		newItem := newItems[end-1]
-		currItem := Untrack(n.items[end-1].Read)
+func (n *forItem[T]) Mount(slot *loom.Slot) error {
+	return n.Update(slot)
+}
 
-		if !n.compareItems(newItem, currItem) {
-			break
-		}
-		end--
-	}
-
-	Batch(func() {
-		// update existing items
-		for i := start; i < end; i++ {
-			newItem := newItems[i]
-			n.items[i].Write(newItem)
-			n.indexes[i].Write(i)
-		}
-
-		// dispose removed items
-		for i := end; i < len(n.mapped); i++ {
-			n.owners[i].Dispose()
-		}
-
-		// resize slices
-		oldLen := len(n.mapped)
-		n.resizeItems(len(newItems))
-
-		// create new items
-		for i := oldLen; i < len(newItems); i++ {
-			n.initItem(i, &newItems[i])
-		}
+func (n *forItem[T]) Update(slot *loom.Slot) error {
+	return n.owner.Run(func() error {
+		return slot.RenderChildren(n.node)
 	})
 }
 
-func (n *forNode[T]) resizeItems(newLen int) {
-	oldLen := len(n.mapped)
-	if newLen > oldLen {
-		n.mapped = append(n.mapped, make([]loom.Node, newLen-oldLen)...)
-		n.owners = append(n.owners, make([]*Owner, newLen-oldLen)...)
-		n.items = append(n.items, make([]*sig.Signal[T], newLen-oldLen)...)
-		n.indexes = append(n.indexes, make([]*sig.Signal[int], newLen-oldLen)...)
-	} else {
-		n.mapped = n.mapped[:newLen]
-		n.owners = n.owners[:newLen]
-		n.items = n.items[:newLen]
-		n.indexes = n.indexes[:newLen]
-	}
-}
-
-func (n *forNode[T]) disposeItems() {
-	n.renderOwner.Dispose()
-
-	n.mapped = nil
-	n.owners = nil
-	n.items = nil
-	n.indexes = nil
-}
-
-func (n *forNode[T]) compareItems(a, b T) bool {
-	if n.keyer == nil {
-		return reflect.DeepEqual(a, b)
-	}
-
-	return reflect.DeepEqual((n.keyer)(a), (n.keyer)(b))
-}
-
-func parseForKeyer[
-	T any,
-	Keyer ForKeyer[T],
-](
-	keyer Keyer,
-	mapper ...func(Accessor[T], Accessor[int]) loom.Node,
-) (
-	func(T) any,
-	func(Accessor[T], Accessor[int]) loom.Node,
-	error,
-) {
-	mapperFn, ok := any(keyer).(func(Accessor[T], Accessor[int]) loom.Node)
-	if ok {
-		if len(mapper) > 0 {
-			return nil, nil, errors.New("For: expected at most one mapper function")
-		}
-
-		return nil, mapperFn, nil
-	}
-
-	keyerFn, keyed := any(keyer).(func(T) any)
-	if !keyed {
-		return nil, nil, errors.New("For: expected keyer to be either a key function or a mapper function")
-	}
-	if len(mapper) == 0 {
-		return nil, nil, errors.New("For: expected mapper function")
-	}
-	if len(mapper) > 1 {
-		return nil, nil, errors.New("For: expected at most one mapper function")
-	}
-
-	return keyerFn, mapper[0], nil
+func (n *forItem[T]) Unmount(slot *loom.Slot) error {
+	return nil
 }

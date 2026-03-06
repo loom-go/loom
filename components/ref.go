@@ -2,72 +2,38 @@ package components
 
 import (
 	"fmt"
-
-	"github.com/AnatoleLucet/loom"
+	"reflect"
 )
 
-// Ref creates a Node that calls the provided function with the parent node as an argument.
-func Ref[T any](ref *T) loom.Node {
-	return &refNode[T]{ref}
+// Ref assigns the parent node to the provided pointer when applied.
+type Ref struct {
+	Ptr any // *T
+	Fn  any // func(T)
 }
 
-type refNode[T any] struct {
-	ref *T
-}
+func (r Ref) Apply(parent any) (func() error, error) {
+	// todo: should be able to do all this without reflection and with compile-time type safety
+	// once this is added: https://github.com/golang/go/issues/61731
 
-func (n *refNode[T]) ID() string {
-	return "loom.Ref"
-}
+	parentType := reflect.TypeOf(parent)
 
-func (n *refNode[T]) Mount(slot *loom.Slot) error {
-	parent := slot.Parent()
+	if r.Ptr != nil {
+		ptrType := reflect.TypeOf(r.Ptr)
+		if ptrType.Kind() != reflect.Pointer || ptrType.Elem() != parentType {
+			return nil, fmt.Errorf("Ref: %w: the given Ptr type (%s) does not match the parent node type (%s)", ErrNodeRefMissMatch, ptrType, parentType)
+		}
 
-	casted, ok := parent.(T)
-	if !ok {
-		return fmt.Errorf("Ref: %w: the given ref type (%T) does not match the parent node type (%T)", ErrNodeRefMissMatch, *new(T), parent)
+		reflect.ValueOf(r.Ptr).Elem().Set(reflect.ValueOf(parent))
 	}
 
-	*n.ref = casted
-	return nil
-}
+	if r.Fn != nil {
+		fnType := reflect.TypeOf(r.Fn)
+		if fnType.Kind() != reflect.Func || fnType.NumIn() != 1 || fnType.In(0) != parentType {
+			return nil, fmt.Errorf("Ref: %w: the given Fn type (%s) does not match the parent node type (%s)", ErrNodeRefMissMatch, fnType, parentType)
+		}
 
-func (n *refNode[T]) Update(slot *loom.Slot) error {
-	return nil
-}
-
-func (n *refNode[T]) Unmount(slot *loom.Slot) error {
-	return nil
-}
-
-// OnRef creates a Node that calls the provided function with the parent node as an argument.
-func OnRef[T any](fn func(T)) loom.Node {
-	return &onRefNode[T]{fn}
-}
-
-type onRefNode[T any] struct {
-	fn func(T)
-}
-
-func (n *onRefNode[T]) ID() string {
-	return "loom.OnRef"
-}
-
-func (n *onRefNode[T]) Mount(slot *loom.Slot) error {
-	parent := slot.Parent()
-
-	casted, ok := parent.(T)
-	if !ok {
-		return fmt.Errorf("OnRef: %w: the given ref type (%T) does not match the parent node type (%T)", ErrNodeRefMissMatch, *new(T), parent)
+		reflect.ValueOf(r.Fn).Call([]reflect.Value{reflect.ValueOf(parent)})
 	}
 
-	n.fn(casted)
-	return nil
-}
-
-func (n *onRefNode[T]) Update(slot *loom.Slot) error {
-	return nil
-}
-
-func (n *onRefNode[T]) Unmount(slot *loom.Slot) error {
-	return nil
+	return nil, nil
 }
