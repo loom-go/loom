@@ -1,8 +1,8 @@
 package components
 
 import (
-	"github.com/AnatoleLucet/loom"
-	"github.com/AnatoleLucet/loom/signals"
+	"github.com/loom-go/loom"
+	"github.com/loom-go/loom/signals"
 )
 
 type Context[T any] struct {

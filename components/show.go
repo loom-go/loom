@@ -1,7 +1,7 @@
 package components
 
 import (
-	"github.com/AnatoleLucet/loom"
+	"github.com/loom-go/loom"
 )
 
 // Show conditionally renders the given node if the when function returns true.

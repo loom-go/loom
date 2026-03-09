@@ -17,7 +17,7 @@ setCount(10)
 ### Installation
 
 ```bash
-go get github.com/AnatoleLucet/loom/signals
+go get github.com/loom-go/loom/signals
 ```
 
 ### Basic counter
@@ -28,7 +28,7 @@ package main
 import (
     "fmt"
 
-    . "github.com/AnatoleLucet/loom/signals"
+    . "github.com/loom-go/loom/signals"
 )
 
 func main() {

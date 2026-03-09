@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/AnatoleLucet/loom"
+	"github.com/loom-go/loom"
 	"github.com/stretchr/testify/assert"
 )
 

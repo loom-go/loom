@@ -1,7 +1,7 @@
 package components
 
 import (
-	"github.com/AnatoleLucet/loom"
+	"github.com/loom-go/loom"
 )
 
 // Own wraps a node so that it is managed by the given signals.Owner.

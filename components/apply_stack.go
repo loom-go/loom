@@ -1,6 +1,6 @@
 package components
 
-import "github.com/AnatoleLucet/loom"
+import "github.com/loom-go/loom"
 
 // todo: none of that is concurency safe. prob will need to be
 

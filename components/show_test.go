@@ -3,8 +3,8 @@ package components
 import (
 	"testing"
 
-	"github.com/AnatoleLucet/loom"
-	"github.com/AnatoleLucet/loom/test"
+	"github.com/loom-go/loom"
+	"github.com/loom-go/loom/test"
 	"github.com/stretchr/testify/assert"
 )
 

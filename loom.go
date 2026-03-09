@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/AnatoleLucet/loom/signals"
+	"github.com/loom-go/loom/signals"
 )
 
 func Render(parent any, node Node) (*signals.Owner, error) {

@@ -3,8 +3,8 @@ package components
 import (
 	"sync/atomic"
 
-	"github.com/AnatoleLucet/loom"
 	"github.com/AnatoleLucet/sig"
+	"github.com/loom-go/loom"
 )
 
 func For[T any](

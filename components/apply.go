@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	"github.com/AnatoleLucet/loom"
+	"github.com/loom-go/loom"
 )
 
 func Apply(appliers ...loom.Applier) loom.Node {

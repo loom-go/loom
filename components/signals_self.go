@@ -3,7 +3,7 @@ package components
 import (
 	"context"
 
-	"github.com/AnatoleLucet/loom"
+	"github.com/loom-go/loom"
 )
 
 type component struct {

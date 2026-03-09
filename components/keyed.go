@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"sync/atomic"
 
-	"github.com/AnatoleLucet/loom"
 	"github.com/AnatoleLucet/sig"
+	"github.com/loom-go/loom"
 )
 
 func Keyed[T, K any](

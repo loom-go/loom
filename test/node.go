@@ -1,6 +1,6 @@
 package test
 
-import "github.com/AnatoleLucet/loom"
+import "github.com/loom-go/loom"
 
 type MockNode struct {
 	id string

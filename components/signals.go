@@ -1,7 +1,7 @@
 package components
 
 import (
-	"github.com/AnatoleLucet/loom/signals"
+	"github.com/loom-go/loom/signals"
 )
 
 // mainly used to re-export what's in loom/signals for users to import with loom/components

@@ -3,7 +3,7 @@ package components
 import (
 	"sync/atomic"
 
-	"github.com/AnatoleLucet/loom"
+	"github.com/loom-go/loom"
 )
 
 // Bind creates a reactive Node that re-renders whenever any signal

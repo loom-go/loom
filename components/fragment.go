@@ -1,7 +1,7 @@
 package components
 
 import (
-	"github.com/AnatoleLucet/loom"
+	"github.com/loom-go/loom"
 )
 
 // Fragment groups multiple children without adding extra nodes to the output.
