@@ -123,29 +123,46 @@ ThemeContext.Provide("dark", func() {
 fmt.Println(theme()) // returns default value (light)
 ```
 
-#### `Store`
+#### `Writable`
 
 ```go
-type todo struct {
-    title string
-    done  bool
+type user struct {
+    name string
+    age  uint
 }
 
-todos := Store([]todo{})
+users := NewWritable([]user{})
 
-// add a todo
-todos.Update(func(list []todo) {
-    return append(list, todo{title, false})
+// add a user
+users.Update(func(list []user) {
+    return append(list, user{"bob", 42})
 })
 
-// mark a todo as done
-todos.Mutate(func(list *[]todo) {
-    list[0].done = true
-})
-
-// get a todo
-todo := todos.Get()[0]
+// get a user
+u := users.Get()[0]
 
 // reset
-todos.Set([]todo{})
+users.Set([]user{})
+```
+
+#### `Mutable`
+
+```go
+type user struct {
+    name string
+    age  uint
+}
+
+users := NewMutable([]user{})
+
+// add a user
+users.Mutate(func(list *[]user) {
+    list = append(list, user{"bob", 42})
+})
+
+// get a user
+u := users.Get()[0]
+
+// reset
+users.Set([]user{})
 ```
