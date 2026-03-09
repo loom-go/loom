@@ -27,6 +27,7 @@ func Counter() Node {
 ## Quick-start
 
 ```bash
+go mod init my-project
 go get github.com/loom-go/loom github.com/loom-go/term
 ```
 
@@ -47,8 +48,10 @@ func Counter() loom.Node {
 	frame, setFrame := Signal(0)
 
 	go func() {
-		time.Sleep(time.Second / 120)
-		setFrame(frame() + 1)
+		for {
+			time.Sleep(time.Second / 120)
+			setFrame(frame() + 1)
+		}
 	}()
 
 	return Box(Text("Count: "), BindText(frame))
