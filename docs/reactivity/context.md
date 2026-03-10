@@ -1,5 +1,5 @@
 ---
-title: NewContext()
+title: Context[T]
 weight: 7
 ---
 

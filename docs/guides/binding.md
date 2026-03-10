@@ -15,15 +15,13 @@ Binding is the act of assigning a reactive signal to the UI.
 
 It syncs one or more parts of the UI from the signals it depends on. When a signal changes, the UI updates.
 
-For instance, _binding_ a text element's content from a signal's value means: whenever the signal changes, the content of the element gets updated with the value of the signal. It syncs the value of the element, with the value of the signal.
+For instance, _binding_ the value of a singal to the content of a text element means: whenever the signal changes, the text updates with the value of the signal. It mirrors the value of the signal to the content of the element.
 
 ### Binding in loom
 
-If you're coming from a JavaScript framework with JSX, you might be used to binding being implicit. When you use a signal in your JSX it binds that signal automatically to that element. This is not the case in loom.
+If you're coming from a JavaScript framework with JSX, you might be used to binding being implicit. When you use a signal in JSX it binds that signal automatically to that element. This is not the case in loom.
 
 In loom, binding is explicit. It's on you to decide what part of the tree updates or not.
-
-For loom to be pure Go without any compilation overhead, this is a trade off that needed to be made. But I promise you'll get used to it, and you might even end up preferring it!
 
 ```go {style=tokyonight-moon}
 count, setCount := Signal(0)
@@ -38,11 +36,14 @@ return P(
 )
 ```
 
+> For loom to be pure Go without any compilation overhead, this is a trade off that needed to be made. But I promise you'll get used to it, and you might even end up preferring it!
+
 Explicit binding gives you more control over the tree and how it reacts to changes. You can update precisely what's needed. From a single attribute, to a bigger part of the UI, it gives you full control without unnecessary costs.
 
 #### Bind()
 
-As shown above, [`Bind()`](/docs/components/bind) is the default way to _bind_ a signal to the tree. It takes in a function returning a node that be called each time the signal changes.
+As shown above, [`Bind()`](/docs/components/bind) is the default way to _bind_ a signal to the tree.
+It takes a function that will be called each time the signal changes to recompute the returned Node.
 
 ```go {style=tokyonight-moon}
 fruits, setFruits := Signal([]string{"banana", "apple"})
@@ -73,9 +74,7 @@ From there it's up to you! You can use `Bind()` for micro-updating specific part
 
 #### BindX()
 
-Most components comes with a `Bind()` wrapper to make it easier for you to update it.
-
-`Text()` has `BindText()`. `Attr()` has `BindAttr()`, `Style{}` has `BindStyle{}` etc.
+Most components comes with a `Bind()` wrapper to make it easier for you to update its arguments (e.g. `Text()` has `BindText()`)
 
 They essensiatlly are just wrappers around the standard component, but takes a signal (a function returning a value) instead of the value directly:
 
@@ -104,13 +103,15 @@ return P(
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< tabs items="BindAttr, Bind" >}}
+Some [appliers](/docs/concepts/#applier) also allow functions to make it easier to bind some values.
+
+{{< tabs items="Attr{}, Bind(Attr{})" >}}
 {{< tab >}}
 
 ```go {style=tokyonight-moon}
 value, setValue := Signal("")
 
-return Input(BindAttr("value", value))
+return Input(Apply(Attr{value: value}))
 ```
 
 {{< /tab >}}
@@ -121,7 +122,7 @@ value, setValue := Signal("")
 
 return Input(
     Bind(func() Node {
-        return Attr("value", value())
+        return Apply(Attr{value: value()})
     }),
 )
 ```
@@ -129,7 +130,7 @@ return Input(
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< tabs items="BindStyle, Bind" >}}
+{{< tabs items="Style{}, Bind(Style{})" >}}
 {{< tab >}}
 
 ```go {style=tokyonight-moon}
@@ -138,10 +139,11 @@ color, setColor := Signal("#777")
 return Box(
     Text("a box"),
 
-    Apply(
-        Style{Width: 100, Height: 100},
-        BindStyle{BackgroundColor: color}, // taking signals instead of values
-    ),
+    Apply(Style{
+        Width: 100,
+        Height: 100,
+        BackgroundColor: color, // giving it a signal instead of a value
+    }),
 )
 ```
 
@@ -156,9 +158,7 @@ return Box(
 
     Apply(Style{Width: 100, Height: 100}),
     Bind(func() Node {
-        return Apply(Style{
-            BackgroundColor: color()
-        })
+        return Apply(Style{BackgroundColor: color()}),
     }),
 )
 ```

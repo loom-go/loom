@@ -1,12 +1,11 @@
 ---
-weight: 3
+weight: 4
 title: For()
 ---
 
 ```go {style=tokyonight-moon}
-func For[T any](
+func For[T comparable](
     items func() []T,
-    keyer func(item T) any,
-    mapper func(item Accessor[T], index Accesor[T]) Node,
+    mapper func(item T, index Accesor[int]) Node,
 ) Node
 ```

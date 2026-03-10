@@ -7,28 +7,29 @@ We'll cover: how to install loom, how to setup a renderer, and how to run your f
 
 ---
 
-#### Creating a new Go project
+### Installing Loom
+
+In a new folder, initialize a new project:
 
 ```bash {style=tokyonight-moon}
 go mod init my-project
 ```
 
-#### Installing Loom
+And install loom:
 
 ```bash {style=tokyonight-moon}
-go get github.com/AnatoleLucet/loom
+go get github.com/loom-go/loom
 ```
 
-#### Installing a renderer
-
-When setting up a new loom app, you must choose a [renderer](/docs/concepts#renderer). This is where you decide for which plateform you want to make a loom app.
-
-<div>
 <br/>
-[*] <b>LOOM-TERM</b> | For building Terminal UIs.
+
+### Installing a renderer
+
+When setting up a new loom app, you must choose a [renderer](/docs/concepts#renderer). This is where you decide which plateform your loom app will run on.
+
+[LOOM-TERM](/term), for building Terminal UIs.
 <br/>
-[*] <b>LOOM-WEB</b> | For building Web SPAs.
-</div>
+[LOOM-WEB](/web), for building Web SPAs.
 
 How to intall each:
 
@@ -36,20 +37,24 @@ How to intall each:
 {{< tab >}}
 
 ```bash {style=tokyonight-moon}
-go get github.com/AnatoleLucet/loom-term
+go get github.com/loom-go/term
 ```
+
+> LOOM-TERM uses CGO. Make sure you have a C compiler like GCC or MinGW installed.
 
 {{< /tab >}}
 {{< tab >}}
 
 ```bash {style=tokyonight-moon}
-go get github.com/AnatoleLucet/loom-web
+go get github.com/loom-go/web
 ```
 
 {{< /tab >}}
 {{< /tabs >}}
 
-#### Creating a component
+<br/>
+
+### Creating a component
 
 In a new `main.go` file:
 
@@ -60,9 +65,9 @@ In a new `main.go` file:
 package main
 
 import (
-    . "github.com/AnatoleLucet/loom"
-    . "github.com/AnatoleLucet/loom/components"
-    . "github.com/AnatoleLucet/loom-term/components"
+    "github.com/loom-go/loom"
+    . "github.com/loom-go/loom/components"
+    . "github.com/loom-go/term/components"
 )
 
 var (
@@ -78,10 +83,10 @@ var (
 	}
 )
 
-func App() Node {
+func App() loom.Node {
     now, setNow := Signal(time.Now())
 
-    go func(self Component) {
+    go func(self loom.Component) {
         ticker := time.NewTicker(time.Second)
         defer ticker.Stop()
 
@@ -108,9 +113,9 @@ func App() Node {
 package main
 
 import (
-    . "github.com/AnatoleLucet/loom"
-    . "github.com/AnatoleLucet/loom/components"
-    . "github.com/AnatoleLucet/loom-web/components"
+    "github.com/loom-go/loom"
+    . "github.com/loom-go/loom/components"
+    . "github.com/loom-go/web/components"
 )
 
 var (
@@ -127,10 +132,10 @@ var (
 	}
 )
 
-func App() Node {
+func App() loom.Node {
     now, setNow := Signal(time.Now())
 
-    go func(self Component) {
+    go func(self loom.Component) {
         ticker := time.NewTicker(time.Second)
         defer ticker.Stop()
 
@@ -153,7 +158,9 @@ func App() Node {
 {{< /tab >}}
 {{< /tabs >}}
 
-#### Using the renderer
+<br/>
+
+### Using the renderer
 
 In the same `main.go` file:
 
@@ -164,7 +171,7 @@ In the same `main.go` file:
 import (
     // ...
 
-    "github.com/AnatoleLucet/loom-term"
+    "github.com/loom-go/term"
 )
 
 func main() {
@@ -186,7 +193,7 @@ func main() {
 import (
     // ...
 
-    "github.com/AnatoleLucet/loom-web"
+    "github.com/loom-go/web"
 )
 
 func main() {
@@ -201,7 +208,9 @@ func main() {
 {{< /tab >}}
 {{< /tabs >}}
 
-#### Running the app
+<br/>
+
+### Running the app
 
 <br/>
 <details>
@@ -214,11 +223,10 @@ func main() {
 package main
 
 import (
-    . "github.com/AnatoleLucet/loom"
-    . "github.com/AnatoleLucet/loom/components"
-    . "github.com/AnatoleLucet/loom-term/components"
-
-    "github.com/AnatoleLucet/loom-term"
+    "github.com/loom-go/loom"
+    . "github.com/loom-go/loom/components"
+    "github.com/loom-go/term"
+    . "github.com/loom-go/term/components"
 
 )
 
@@ -235,10 +243,10 @@ var (
 	}
 )
 
-func App() Node {
+func App() loom.Node {
     now, setNow := Signal(time.Now())
 
-    go func(self Component) {
+    go func(self loom.Component) {
         ticker := time.NewTicker(time.Second)
         defer ticker.Stop()
 
@@ -276,11 +284,10 @@ func main() {
 package main
 
 import (
-    . "github.com/AnatoleLucet/loom"
-    . "github.com/AnatoleLucet/loom/components"
-    . "github.com/AnatoleLucet/loom-web/components"
-
-    "github.com/AnatoleLucet/loom-web"
+    "github.com/loom-go/loom"
+    . "github.com/loom-go/loom/components"
+    "github.com/loom-go/web"
+    . "github.com/loom-go/loom-web/components"
 )
 
 var (
@@ -297,10 +304,10 @@ var (
 	}
 )
 
-func App() Node {
+func App() loom.Node {
     now, setNow := Signal(time.Now())
 
-    go func(self Component) {
+    go func(self loom.Component) {
         ticker := time.NewTicker(time.Second)
         defer ticker.Stop()
 
@@ -359,6 +366,6 @@ And you should see the current time in fullscreen!
 
 From there it's up to you!
 
-Be sure to have a read at -> [CORE CONCEPTS](/docs/concepts) to understand more about loom.
+Be sure to have a look at -> [CORE CONCEPTS](/docs/concepts) to understand more about loom.
 
-And if you’re coming from a signal-based JavaScript framework, make sure you have a quick read at -> [SIGNALS SCHEDULING](/docs/guides/reactivity#scheduling) and -> [BINDING](/docs/guides/binding) to understand the differences with loom.
+If you’re coming from a signal-based JavaScript framework, make sure you have a quick read of -> [SIGNALS SCHEDULING](/docs/guides/reactivity#scheduling) and -> [BINDING](/docs/guides/binding) to understand the differences with loom.

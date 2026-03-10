@@ -59,12 +59,12 @@ func Counter() Node {
 func Condition() Node {
     display, setDisplay := Signal(false)
 
-    toggle := func(*EventMouse) {
+    toggle := func(*term.EventMouse) {
         setDisplay(!display())
     }
 
     return Box(
-        Box(Text("toggle"), On("click", toggle)),
+        Box(Text("toggle"), Apply(On{Click: toggle})),
 
         Show(display, func() Node {
             return Text("am i visible now?")
@@ -80,12 +80,12 @@ func Condition() Node {
 func Condition() Node {
     display, setDisplay := Signal(false)
 
-    toggle := func(*EventMouse) {
+    toggle := func(*web.EventMouse) {
         setDisplay(!display())
     }
 
     return Div(
-        Button(Text("toggle"), On("click", toggle)),
+        Box(Text("toggle"), Apply(On{Click: toggle})),
 
         Show(display, func() Node {
             return Text("am i visible now?")
@@ -109,12 +109,9 @@ func FruitList() Node {
     fruits, setFruits := Signal([]string{"banana", "apple", "orange"})
 
     return Box(
-        For(
-            fruits,
-            func(fruit Accessor[string], index Accessor[int]) Node {
-                return P(BindText(fruit))
-            },
-        ),
+        For(fruits, func(fruit Accessor[string], index Accessor[int]) Node {
+            return P(BindText(fruit))
+        }),
     )
 }
 ```
@@ -127,12 +124,9 @@ func FruitList() Node {
     fruits, setFruits := Signal([]string{"banana", "apple", "orange"})
 
     return Ul(
-        For(
-            fruits,
-            func(fruit Accessor[string], index Accessor[int]) Node {
-                return Li(BindText(fruit))
-            },
-        ),
+        For(fruits, func(fruit Accessor[string], index Accessor[int]) Node {
+            return Li(BindText(fruit))
+        }),
     )
 }
 ```
@@ -141,50 +135,3 @@ func FruitList() Node {
 {{< /tabs >}}
 
 <br/>
-
-#### User input
-
-{{< tabs items="TERM,WEB" >}}
-{{< tab >}}
-
-```go {style=tokyonight-moon}
-func UserInput() Node {
-    value, setValue := Signal("")
-
-    update := func(e *EventInput) {
-        setInput(e.InputValue())
-    }
-
-    return Box(
-        P(Text("Value: "), BindText(value)),
-
-        InputText(On("input", udpate)),
-    )
-}
-```
-
-{{< /tab >}}
-{{< tab >}}
-
-```go {style=tokyonight-moon}
-func UserInput() Node {
-    value, setValue := Signal("")
-
-    update := func(e *EventInput) {
-        setInput(e.InputValue())
-    }
-
-    return Div(
-        P(Text("Value: "), BindText(value)),
-
-        Input(
-            Attr("type", "text"),
-            BindAttr("value", input),
-            On("input", udpate),
-        ),
-    )
-}
-```
-
-{{< /tab >}}
-{{< /tabs >}}
