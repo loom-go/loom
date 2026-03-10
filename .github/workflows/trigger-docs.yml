@@ -1,0 +1,20 @@
+name: Trigger Docs Update
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch docs update
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.DOCS_TRIGGER_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/loom-go/docs/dispatches \
+            -d '{"event_type": "update-docs", "client_payload": {"source": "loom"}}'
