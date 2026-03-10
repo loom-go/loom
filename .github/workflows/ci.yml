@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  vet:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.23", "1.24", "1.25", "stable"]
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      - uses: actions/checkout@v4
+      - name: Vet
+        run: go vet ./...
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.23", "1.24", "1.25", "stable"]
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Install chrome
+        uses: browser-actions/setup-chrome@latest
+      - name: Install dep
+        run: go install github.com/agnivade/wasmbrowsertest@latest
+      - name: Setup wasmexec
+        run: mv $(go env GOPATH)/bin/wasmbrowsertest $(go env GOPATH)/bin/go_js_wasm_exec
+      - uses: actions/checkout@v4
+      - name: Test
+        run: ./etc/scripts/test.sh ./...
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.23", "1.24", "1.25", "stable"]
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      - uses: actions/checkout@v4
+      - name: Build
+        run: go build -v ./...
