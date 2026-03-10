@@ -7,9 +7,9 @@ import (
 	"github.com/loom-go/loom"
 )
 
-func For[T any](
-	items Accessor[[]*T],
-	mapper func(*T, Accessor[int]) loom.Node,
+func For[T comparable](
+	items Accessor[[]T],
+	mapper func(T, Accessor[int]) loom.Node,
 ) loom.Node {
 	return &forNode[T]{
 		input:       items,
@@ -18,9 +18,9 @@ func For[T any](
 	}
 }
 
-type forNode[T any] struct {
-	input  Accessor[[]*T]
-	mapper func(*T, Accessor[int]) loom.Node
+type forNode[T comparable] struct {
+	input  Accessor[[]T]
+	mapper func(T, Accessor[int]) loom.Node
 
 	// currently rendered items
 	items []*forItem[T]
@@ -61,7 +61,7 @@ func (n *forNode[T]) Unmount(slot *loom.Slot) error {
 	return nil
 }
 
-func (n *forNode[T]) reconcile(slot *loom.Slot, newItems []*T) error {
+func (n *forNode[T]) reconcile(slot *loom.Slot, newItems []T) error {
 	oldLen := len(n.items)
 	newLen := len(newItems)
 	result := make([]*forItem[T], newLen)
@@ -95,7 +95,7 @@ func (n *forNode[T]) reconcile(slot *loom.Slot, newItems []*T) error {
 	}
 
 	// index map for new window [start...newEnd]
-	indices := make(map[*T]int, newEnd-start+1)
+	indices := make(map[T]int, newEnd-start+1)
 	for i := start; i <= newEnd; i++ {
 		indices[newItems[i]] = i
 	}
@@ -143,13 +143,13 @@ func (n *forNode[T]) nodes() []loom.Node {
 	return nodes
 }
 
-func (n *forNode[T]) initItems(items []*T) {
+func (n *forNode[T]) initItems(items []T) {
 	for i, item := range items {
 		n.items = append(n.items, n.initItem(i, item))
 	}
 }
 
-func (n *forNode[T]) initItem(index int, item *T) *forItem[T] {
+func (n *forNode[T]) initItem(index int, item T) *forItem[T] {
 	indexSignal := sig.NewSignal(index)
 
 	var node loom.Node
@@ -174,8 +174,8 @@ func (n *forNode[T]) disposeAll() {
 
 // used to make sure children are owned by the owner
 // and the reactive scope can stay active when items are moved in the list
-type forItem[T any] struct {
-	value *T
+type forItem[T comparable] struct {
+	value T
 	node  loom.Node
 	owner *Owner
 	index *sig.Signal[int]
