@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/loom-go/loom/compare/v0.1.0...v0.2.0) (2026-03-11)
+
+
+### Features
+
+* **for:** accept comparable types ([ffd3bca](https://github.com/loom-go/loom/commit/ffd3bcafd79e8b587504220758970b08c37beb46))
+
 ## [0.1.0](https://github.com/loom-go/loom/compare/v0.1.0...v0.1.0) (2026-03-10)
 
 
