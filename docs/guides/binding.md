@@ -5,7 +5,7 @@ weight: 2
 
 Everything you need to know about _binding_ in loom.
 
-This document expects you to be familiar with loom's core concepts and signal-based reactivity. If not -> [CORE CONCEPTS](/docs/concepts), and -> [REACTIVITY](/docs/guides/reactivity)
+This document expects you to be familiar with loom's core concepts and signal-based reactivity. If not -> [CORE CONCEPTS](/docs/get-started/concepts), and -> [REACTIVITY](/docs/guides/reactivity)
 
 ---
 
@@ -103,7 +103,7 @@ return P(
 {{< /tab >}}
 {{< /tabs >}}
 
-Some [appliers](/docs/concepts/#applier) also allow functions to make it easier to bind some values.
+Some [appliers](/docs/get-started/concepts/#applier) also allow functions to make it easier to bind some values.
 
 {{< tabs items="Attr{}, Bind(Attr{})" >}}
 {{< tab >}}

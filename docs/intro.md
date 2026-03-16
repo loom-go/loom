@@ -5,7 +5,7 @@ weight: 1
 
 Loom is a framework for building user interfaces, for any plateform.
 
-You define declarative components written in pure Go, and loom renders them using a plateform-specific [renderer](/docs/concepts.md#renderer).
+You define declarative components written in pure Go, and loom renders them using a plateform-specific [renderer](/docs/get-started/concepts#renderer).
 
 {{< tabs items="TERM,WEB" >}}
 
@@ -73,6 +73,6 @@ You can use it to build and compose as many components as your UI needs. From si
 
 ---
 
-If you'd like to get started -> [GETTING STARTED](/docs/getting-started)
+If you'd like to run you first app -> [QUICK START](/docs/quick-start)
 
-Or to keep reading about loom and how it works -> [CORE CONCEPTS](/docs/concepts)
+Or to keep reading about loom and how it works -> [GETTING STARTED](/docs/get-started/setup)

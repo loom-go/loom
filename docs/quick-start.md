@@ -1,5 +1,5 @@
 ---
-title: "GETTING STARTED"
+title: "QUICK START"
 weight: 2
 ---
 
@@ -7,7 +7,7 @@ We'll cover: how to install loom, how to setup a renderer, and how to run your f
 
 ---
 
-### Installing Loom
+### Setup
 
 In a new folder, initialize a new project:
 
@@ -15,23 +15,13 @@ In a new folder, initialize a new project:
 go mod init my-project
 ```
 
-And install loom:
+Install loom:
 
 ```bash {style=tokyonight-moon}
 go get github.com/loom-go/loom
 ```
 
-<br/>
-
-### Installing a renderer
-
-When setting up a new loom app, you must choose a [renderer](/docs/concepts#renderer). This is where you decide which plateform your loom app will run on.
-
-[LOOM-TERM](/term), for building Terminal UIs.
-<br/>
-[LOOM-WEB](/web), for building Web SPAs.
-
-How to intall each:
+And install a [renderer](/docs/get-started/concepts#renderer):
 
 {{< tabs items="TERM,WEB" >}}
 {{< tab >}}
@@ -40,7 +30,9 @@ How to intall each:
 go get github.com/loom-go/term
 ```
 
-> LOOM-TERM uses CGO. Make sure you have a C compiler like GCC or MinGW installed.
+{{< callout type="warning" >}}
+**LOOM-TERM** uses [CGO](https://go.dev/blog/cgo). Make sure you have a C compiler installed like GCC on Linux/Darwin, or MinGW on Windows.
+{{< /callout >}}
 
 {{< /tab >}}
 {{< tab >}}
@@ -65,6 +57,8 @@ In a new `main.go` file:
 package main
 
 import (
+	"time"
+
     "github.com/loom-go/loom"
     . "github.com/loom-go/loom/components"
     . "github.com/loom-go/term/components"
@@ -87,10 +81,7 @@ func App() loom.Node {
     now, setNow := Signal(time.Now())
 
     go func(self loom.Component) {
-        ticker := time.NewTicker(time.Second)
-        defer ticker.Stop()
-
-        for t := range ticker.C {
+        for t := range time.Tick(time.Second) {
             if self.IsDisposed() {
                 return
             }
@@ -113,6 +104,8 @@ func App() loom.Node {
 package main
 
 import (
+	"time"
+
     "github.com/loom-go/loom"
     . "github.com/loom-go/loom/components"
     . "github.com/loom-go/web/components"
@@ -136,10 +129,7 @@ func App() loom.Node {
     now, setNow := Signal(time.Now())
 
     go func(self loom.Component) {
-        ticker := time.NewTicker(time.Second)
-        defer ticker.Stop()
-
-        for t := range ticker.C {
+        for t := range time.Tick(time.Second) {
             if self.IsDisposed() {
                 return
             }
@@ -171,13 +161,15 @@ In the same `main.go` file:
 import (
     // ...
 
+    "fmt"
+    "os"
     "github.com/loom-go/term"
 )
 
 func main() {
 	app := term.NewApp()
 
-	for err := range app.Run(RenderFullscreen, App) {
+	for err := range app.Run(term.RenderFullscreen, App) {
 		app.Close()
 
 		fmt.Printf("Error: %v\n", err)
@@ -223,6 +215,10 @@ func main() {
 package main
 
 import (
+    "fmt"
+    "os"
+	"time"
+
     "github.com/loom-go/loom"
     . "github.com/loom-go/loom/components"
     "github.com/loom-go/term"
@@ -247,10 +243,7 @@ func App() loom.Node {
     now, setNow := Signal(time.Now())
 
     go func(self loom.Component) {
-        ticker := time.NewTicker(time.Second)
-        defer ticker.Stop()
-
-        for t := range ticker.C {
+        for t := range time.Tick(time.Second) {
             if self.IsDisposed() {
                 return
             }
@@ -268,7 +261,7 @@ func App() loom.Node {
 func main() {
 	app := term.NewApp()
 
-	for err := range app.Run(RenderFullscreen, App) {
+	for err := range app.Run(term.RenderFullscreen, App) {
 		app.Close()
 
 		fmt.Printf("Error: %v\n", err)
@@ -284,6 +277,8 @@ func main() {
 package main
 
 import (
+	"time"
+
     "github.com/loom-go/loom"
     . "github.com/loom-go/loom/components"
     "github.com/loom-go/web"
@@ -308,10 +303,7 @@ func App() loom.Node {
     now, setNow := Signal(time.Now())
 
     go func(self loom.Component) {
-        ticker := time.NewTicker(time.Second)
-        defer ticker.Stop()
-
-        for t := range ticker.C {
+        for t := range time.Tick(time.Second) {
             if self.IsDisposed() {
                 return
             }
@@ -352,10 +344,43 @@ And you should see the current time in fullscreen!
 {{< /tab >}}
 {{< tab >}}
 
-- create index.html file
-- wasm_exec.js
-- build
-- open index.html
+Create an `index.html` file:
+
+```html {style=tokyonight-moon}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>App</title>
+  </head>
+
+  <body>
+    <div id="app"></div>
+
+    <script src="https://cdn.jsdelivr.net/gh/golang/go@go1.25.0/lib/wasm/wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(
+        fetch("main.wasm"),
+        go.importObject,
+      ).then((r) => go.run(r.instance));
+    </script>
+  </body>
+</html>
+```
+
+Build your `main.go` in wasm:
+
+```go {style=tokyonight-moon}
+GOOS=js GOARCH=wasm go build -o main.wasm main.go
+```
+
+And serve your files with your favorite http server!
+Here with [`serve`](https://www.npmjs.com/package/serve):
+
+```go {style=tokyonight-moon}
+npx serve
+```
 
 {{< /tab >}}
 {{< /tabs >}}
@@ -366,6 +391,6 @@ And you should see the current time in fullscreen!
 
 From there it's up to you!
 
-Be sure to have a look at -> [CORE CONCEPTS](/docs/concepts) to understand more about loom.
+Be sure to have a look at -> [CORE CONCEPTS](/docs/get-started/concepts) to understand more about loom.
 
 If you’re coming from a signal-based JavaScript framework, make sure you have a quick read of -> [SIGNALS SCHEDULING](/docs/guides/reactivity#scheduling) and -> [BINDING](/docs/guides/binding) to understand the differences with loom.

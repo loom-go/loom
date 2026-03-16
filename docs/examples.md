@@ -3,6 +3,8 @@ title: "EXAMPLES"
 weight: 10
 ---
 
+Fully functioning examples can be found at [`github.com/go-loom/loom/examples`](https://github.com/loom-go/loom/tree/main/examples).
+
 #### Counter
 
 {{< tabs items="TERM,WEB" >}}
@@ -12,12 +14,12 @@ weight: 10
 func Counter() Node {
 	count, setCount := Signal(0)
 
-    go func(self Component) {
-        for !self.IsDisposed() {
+    go func() {
+        for {
             time.Sleep(time.Second / 30)
             setCount(count() + 1)
         }
-    }(Self())
+    }()
 
 	return P(Text("Count: "), BindText(count))
 }
@@ -32,12 +34,12 @@ func Counter() Node {
 func Counter() Node {
 	count, setCount := Signal(0)
 
-    go func(self Component) {
-        for !self.IsDisposed() {
+    go func() {
+        for {
             time.Sleep(time.Second / 30)
             setCount(count() + 1)
         }
-    }(Self())
+    }()
 
 	return P(Text("Count: "), BindText(count))
 }
@@ -48,7 +50,7 @@ func Counter() Node {
 {{< /tab >}}
 {{< /tabs >}}
 
-<br/>
+---
 
 #### Conditions
 
@@ -97,7 +99,7 @@ func Condition() Node {
 {{< /tab >}}
 {{< /tabs >}}
 
-<br/>
+---
 
 #### Lists
 
@@ -109,8 +111,8 @@ func FruitList() Node {
     fruits, setFruits := Signal([]string{"banana", "apple", "orange"})
 
     return Box(
-        For(fruits, func(fruit Accessor[string], index Accessor[int]) Node {
-            return P(BindText(fruit))
+        For(fruits, func(fruit string, index Accessor[int]) Node {
+            return P(Text(fruit))
         }),
     )
 }
@@ -124,8 +126,8 @@ func FruitList() Node {
     fruits, setFruits := Signal([]string{"banana", "apple", "orange"})
 
     return Ul(
-        For(fruits, func(fruit Accessor[string], index Accessor[int]) Node {
-            return Li(BindText(fruit))
+        For(fruits, func(fruit string, index Accessor[int]) Node {
+            return P(Text(fruit))
         }),
     )
 }
@@ -134,4 +136,57 @@ func FruitList() Node {
 {{< /tab >}}
 {{< /tabs >}}
 
-<br/>
+---
+
+#### Goroutine cancellation
+
+See [`Self()`](/docs/reactivity/self).
+
+{{< tabs items="TERM,WEB" >}}
+{{< tab >}}
+
+```go {style=tokyonight-moon}
+func MyComponent() Node {
+    go func(self Component) {
+        for {
+            select {
+            case <-self.Disposed():
+                // stop Goroutine when component is diposed
+                return
+            default:
+            }
+
+            // keep looping
+        }
+    }(Self())
+
+	return Text("My component")
+}
+```
+
+{{< /tab >}}
+{{< tab >}}
+
+```go {style=tokyonight-moon}
+func MyComponent() Node {
+    go func(self Component) {
+        for {
+            select {
+            case <-self.Disposed():
+                // stop Goroutine when component is diposed
+                return
+            default:
+            }
+
+            // keep looping
+        }
+    }(Self())
+
+	return Text("My component")
+}
+```
+
+{{< /tab >}}
+{{< /tabs >}}
+
+---

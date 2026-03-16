@@ -1,6 +1,6 @@
 ---
 title: "CORE CONCEPTS"
-weight: 3
+weight: 2
 ---
 
 Loom has five core concepts.
@@ -236,4 +236,6 @@ For instance a web renderer would provide DOM components like `<div>` or `<ul>`.
 [\*] <a href="/term/intro">LOOM-TERM -></a> | For building Terminal UIs.<br/>
 [\*] <a href="/web/intro">LOOM-WEB -></a> | For building Web SPAs.
 
-If you'd like to get started with one of the two -> [GET STARTED](/docs/getting-started)
+---
+
+Let's keep going and build -> [YOUR FIRST APP](/docs/get-started/first-app).

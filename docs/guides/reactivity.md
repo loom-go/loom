@@ -5,7 +5,7 @@ weight: 1
 
 An introduction to reactivity and signals.
 
-This document expects you to be familiar with loom's core concepts. If not -> [CORE CONCEPTS](/docs/concepts)
+This document expects you to be familiar with loom's core concepts. If not -> [CORE CONCEPTS](/docs/get-started/concepts)
 
 ---
 
@@ -120,7 +120,7 @@ At first it might seem like a downgrade from JSX, but with time you will most li
 
 From there you've covered 3/4 of what reactivity is in loom! The rest are conveniences for this paradigm, and best practicies.
 
-If you want to understand more you can read the following section [about scheduling](#scheduling), dive into [the references](http://localhost:1313/docs/reactivity/signal/), or take a look at [the reactive model](https://github.com/AnatoleLucet/sig) that was built to power loom.
+If you want to understand more you can read the following section [about scheduling](#scheduling), dive into [the references](/docs/reactivity/signal/), or take a look at [the reactive model](https://github.com/AnatoleLucet/sig) that was built to power loom.
 
 ---
 
