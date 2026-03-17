@@ -75,4 +75,4 @@ You can use it to build and compose as many components as your UI needs. From si
 
 If you'd like to run you first app -> [QUICK START](/docs/quick-start)
 
-Or to keep reading about loom and how it works -> [GETTING STARTED](/docs/get-started/setup)
+Or to keep reading about loom and how it works -> [CORE CONCEPTS](/docs/get-started/concepts)
