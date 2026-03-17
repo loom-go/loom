@@ -21,8 +21,8 @@ func Counter() Node {
 
 - **Pure Go** | No extra compiler.
 - **Multi-plateform** | Built-in support for TUIs and SPAs.
-- **Signal-based** | Concurrency-safe [reacive model](https://github.com/loom-go/loom/tree/main/signals/README.md) with signals, effects, memos, etc.
-- **Components** | Define you UI as declarative JSX-like components.
+- **Signal-based** | Concurrency-safe [reactive model](https://github.com/loom-go/loom/tree/main/signals/README.md) with signals, effects, memos, etc.
+- **Components** | Define your UI as declarative JSX-like components.
 
 ## Quick-start
 
