@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/loom-go/loom/compare/v0.2.0...v0.2.1) (2026-03-18)
+
+
+### Bug Fixes
+
+* **for:** incorrect items disposal ([96b2844](https://github.com/loom-go/loom/commit/96b2844fc1cd0b0fe2b19565c41e06f24baf4f42))
+
 ## [0.2.0](https://github.com/loom-go/loom/compare/v0.1.0...v0.2.0) (2026-03-11)
 
 
