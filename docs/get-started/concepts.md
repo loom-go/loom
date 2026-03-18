@@ -227,15 +227,19 @@ Or if you want to understand more about using reactivity in general, you can rea
 
 ### Renderer
 
-By itself, loom cannot display anything on your screen. It needs a Renderer for that.
+By itself, loom has no UI concept like styling or positioning.<br/>
+Loom is _just_ a reactive model with basic -- arithmetic -- components like [`For()`](/docs/components/for), [`Show()`](/docs/components/show) and [`Fragment()`](/docs/components/fragment).
 
-A Renderer is responsible for displaying content on screen by providing you plateform-specific components to build a UI with.<br/>
-For instance a web renderer would provide DOM components like `<div>` or `<ul>`. And a theoretical mobile renderer would provide native components like `View`, `Text`, `ScrollView`, etc.
+To build an app with loom, you must use it **alongside** a plateform-specific renderer, that will provide you components and tools for _that_ plateform.
+But loom alone has no understanding of what a renderer is, only your app does.
 
-**There's currently two official renderers:**<br/>
+For instance a web renderer provides DOM components like `<div>` or `<ul>`, and tools to use WebAPIs.<br/>
+While a terminal renderer provides TUI components like `ScrollBox` or `Input`, and tools to interact with TTYs.
+
+**Official renderers:**<br/>
 [\*] <a href="/term/intro">LOOM-TERM -></a> | For building Terminal UIs.<br/>
 [\*] <a href="/web/intro">LOOM-WEB -></a> | For building Web SPAs.
 
 ---
 
-Let's keep going and build -> [YOUR FIRST APP](/docs/get-started/first-app).
+Let's keep going and build -> [YOUR FIRST APP](/docs/get-started/first-app) !
