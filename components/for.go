@@ -64,7 +64,6 @@ func (n *forNode[T]) Unmount(slot *loom.Slot) error {
 func (n *forNode[T]) reconcile(slot *loom.Slot, newItems []T) error {
 	oldLen := len(n.items)
 	newLen := len(newItems)
-	result := make([]*forItem[T], newLen)
 
 	// fast path for empty list
 	if newLen == 0 {
@@ -75,8 +74,15 @@ func (n *forNode[T]) reconcile(slot *loom.Slot, newItems []T) error {
 	// fast path for create
 	if oldLen == 0 {
 		n.initItems(newItems)
-		return slot.RenderChildren(n.nodes()...)
+		for i, item := range n.items {
+			if err := slot.RenderChild(i, item); err != nil {
+				return err
+			}
+		}
+		return nil
 	}
+
+	result := make([]*forItem[T], newLen)
 
 	// common prefix
 	start := 0
@@ -102,7 +108,8 @@ func (n *forNode[T]) reconcile(slot *loom.Slot, newItems []T) error {
 
 	moved := make([]*forItem[T], newLen)
 
-	// walk old window [start...oldEnd]. collect in moved if item is in new window, dispose if not
+	// walk old window [start...oldEnd]
+	// collect in moved if item is in new window, dispose if not
 	for i := start; i <= oldEnd; i++ {
 		item := n.items[i]
 		if j, ok := indices[item.value]; ok {
@@ -111,19 +118,26 @@ func (n *forNode[T]) reconcile(slot *loom.Slot, newItems []T) error {
 		} else {
 			item.owner.Dispose()
 		}
+	}
 
-		// always unmount since it either moved or was removed
+	// unmount all items in window [start...oldEnd]
+	// potentially moved, or removed
+	for i := oldLen - 1; i >= start; i-- {
 		if err := slot.UnmountChild(i); err != nil {
 			return err
 		}
 	}
 
-	// fill new window [start...newEnd]. create or reuse from temp
-	for i := start; i <= newEnd; i++ {
-		if moved[i] != nil {
-			result[i] = moved[i]
-		} else {
-			result[i] = n.initItem(i, newItems[i])
+	// render all items at their new positions
+	for i := start; i < newLen; i++ {
+		if i <= newEnd {
+			// create or reuse from moved
+			if moved[i] != nil {
+				result[i] = moved[i]
+				result[i].index.Write(i)
+			} else {
+				result[i] = n.initItem(i, newItems[i])
+			}
 		}
 
 		if err := slot.RenderChild(i, result[i]); err != nil {
@@ -133,14 +147,6 @@ func (n *forNode[T]) reconcile(slot *loom.Slot, newItems []T) error {
 
 	n.items = result
 	return nil
-}
-
-func (n *forNode[T]) nodes() []loom.Node {
-	nodes := make([]loom.Node, len(n.items))
-	for i, item := range n.items {
-		nodes[i] = item
-	}
-	return nodes
 }
 
 func (n *forNode[T]) initItems(items []T) {
