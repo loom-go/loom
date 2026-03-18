@@ -38,6 +38,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Test
         run: ./etc/scripts/test.sh ./...
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: output/coverage.txt
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   build:
     runs-on: ubuntu-latest

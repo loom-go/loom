@@ -80,3 +80,9 @@ You can visite [loom's website](https://loomui.dev) for the full documentation.
 ## License
 
 [MIT](./LICENSE)
+
+---
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/loom-go/loom.svg)](https://pkg.go.dev/github.com/loom-go/loom)
+[![Go Report Card](https://goreportcard.com/badge/github.com/loom-go/loom)](https://goreportcard.com/report/github.com/loom-go/loom)
+[![Codecov](https://codecov.io/gh/loom-go/loom/graph/badge.svg?token=16KVY029LZ)](https://codecov.io/gh/loom-go/loom)

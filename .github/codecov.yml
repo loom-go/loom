@@ -1,0 +1,4 @@
+ignore:
+  - "test" # test utils dont need testing
+  - "signals" # only re-exports from github/AnatoleLucet/sig
+  - "components/signals.go" # re-exports from /signals

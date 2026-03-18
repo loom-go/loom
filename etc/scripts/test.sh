@@ -1,7 +1,9 @@
 #!/bin/sh
 
+mkdir -p output
+
 echo "Running standard tests..."
-go test -v -race $@
+go test -v -race -coverprofile=output/coverage.txt $@
 
 echo "Running wasm tests..."
 env -i \
