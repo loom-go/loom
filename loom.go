@@ -16,7 +16,7 @@ func Render(parent any, node Node) (*signals.Owner, error) {
 
 	err := owner.Run(func() (err error) {
 		defer func() {
-			// should not happend during initial render, but just in case
+			// should not happened during initial render, but just in case
 			if r := recover(); r != nil {
 				err = fmt.Errorf("%v:\n%s", r, debug.Stack())
 			}

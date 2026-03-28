@@ -76,7 +76,7 @@ func (s *Slot) RenderChild(i int, child Node) error {
 	s.mu.Lock()
 	parent := s.self
 	if parent == nil {
-		// fallback to parent for transparent nodes (fragement, bind, show, etc.)
+		// fallback to parent for transparent nodes (fragment, bind, show, etc.)
 		parent = s.parent
 	}
 	s.mu.Unlock()

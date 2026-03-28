@@ -171,12 +171,12 @@ func MyComponent() loom.Node {
 		Box(
             Text("focus"),
             Apply(On{Click: focus}, styleBtn),
-            ApplyOn(styleBoxHover),
+            ApplyOn("hover", styleBoxHover),
         ),
 		Box(
             Text("blur"),
             Apply(On{Click: blur}, styleBtn),
-            ApplyOn(styleBoxHover),
+            ApplyOn("hover", styleBoxHover),
         ),
 	)
 }
@@ -212,7 +212,7 @@ func MyComponent() loom.Node {
         // read the BINDING guide to learn more
         P(Text("You typed: "), BindText(text)),
 
-        InputText(On("input", udpate)),
+        Input(On("input", udpate)),
     ),
 }
 ```
